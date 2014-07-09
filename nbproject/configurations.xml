@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="94">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+      <itemPath>ChSafeVarInfo.h</itemPath>
+      <itemPath>Constants.h</itemPath>
+      <itemPath>Household.h</itemPath>
+      <itemPath>NewMuArgCP.h</itemPath>
+      <itemPath>NewMuArgCtrl.h</itemPath>
+      <itemPath>Recode.h</itemPath>
+      <itemPath>Table.h</itemPath>
+      <itemPath>UCList.h</itemPath>
+      <itemPath>VarList.h</itemPath>
+      <itemPath>Variable.h</itemPath>
+      <itemPath>globals.h</itemPath>
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>ChSafeVarInfo.cpp</itemPath>
+      <itemPath>Household.cpp</itemPath>
+      <itemPath>NewMuArgCtrl.cpp</itemPath>
+      <itemPath>Table.cpp</itemPath>
+      <itemPath>Variable.cpp</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug" type="2">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+      </compileType>
+      <item path="ChSafeVarInfo.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="ChSafeVarInfo.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Constants.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Household.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Household.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="NewMuArgCP.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="NewMuArgCtrl.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="NewMuArgCtrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Recode.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Table.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Table.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UCList.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="VarList.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Variable.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Variable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="globals.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Release" type="2">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>5</developmentMode>
+        </cTool>
+        <ccTool>
+          <developmentMode>5</developmentMode>
+        </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
+      </compileType>
+      <item path="ChSafeVarInfo.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="ChSafeVarInfo.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Constants.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Household.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Household.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="NewMuArgCP.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="NewMuArgCtrl.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="NewMuArgCtrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Recode.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Table.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Table.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="UCList.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="VarList.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Variable.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Variable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="globals.h" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
