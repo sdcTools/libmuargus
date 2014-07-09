@@ -4,13 +4,19 @@
 #include "globals.h"
 #include <math.h>
 #include <float.h>
+#include <vector>
+#include <malloc.h>
+#include <string>
 
 
 typedef struct {
-	CStringArray sCode;	// list of codes generated from recode, sorted upwards
+	//CStringArray sCode;	// list of codes generated from recode, sorted upwards
+        std::vector<std::string> sCode;
 	int nCode;              // number of codes, should be equal to sCode.GetSize()
-	CString Missing1;       // first missing value
-	CString Missing2;       // second missing value
+	//CString Missing1;       // first missing value
+        std::string Missing1;   // first missing value
+	//CString Missing2;       // second missing value
+        std::string Missing2;       // second missing value
 	int nMissing;	        // number of missing codes (usually 1 or 2)
 	int *DestCode;          // m_var[SrcVar].nCodes times an index to sCode
 	int CodeWidth;          // all sCodes have this width
@@ -26,9 +32,9 @@ public:
 		bPos = -1;
 		nPos = -1;
 		nDec = -1;
-		sCode.SetSize(0, 20);
-		Recode.sCode.SetSize(0, 20);
-		Recode.DestCode = 0;
+		//sCode.SetSize(0, 20);
+		//Recode.sCode.SetSize(0, 20);
+                Recode.DestCode = 0;
 
 		Priority = 50;
 		SetMissing = false;
@@ -38,7 +44,7 @@ public:
 		HasCodingBottom = false;
 		HasWeightNoise = false;
 		HasPram = false;
-		IsHHIdent = FALSE;
+		IsHHIdent = false;
 		Entropy = -1;
 		PramBandWidth = -1;
 		RelatedTo = -1;
@@ -62,28 +68,28 @@ public:
 	long nDec;
 	bool PositionSet;
 
-	BOOL IsHHIdent;
-	BOOL IsHHVar;
-	BOOL IsCategorical;
-	BOOL IsNumeric;
-	BOOL IsWeight;
+	bool IsHHIdent;
+	bool IsHHVar;
+	bool IsCategorical;
+	bool IsNumeric;
+	bool IsWeight;
 
 	int nMissing;
-	CString Missing1;
-	CString Missing2;
+	std::string Missing1;
+	std::string Missing2;
 	bool SetMissing;
 
 	
 	double MinValue;
 	double MaxValue;
-	CStringArray sCode;
+	std::vector<std::string> sCode;
 	int nCode;
 
 	bool HasRecode;
 	RECODE Recode;
 	/// Some more stuff comes here
 	int TableIndex;         // index in table (temporarely used during tabulation and MakeSafe)
-	BOOL TableIsMissing;    // index is Missing
+	bool TableIsMissing;    // index is Missing
         int freq;               // frequency in unsafe tables
         int nSuppress;          // counts suppresses
 
@@ -96,46 +102,47 @@ public:
         int RelatedTo;          // Var number it is related too (will be suppressed too)  
         bool HasCodingTop;      
 	double TopLevel;
-	CString TopString;
+	std::string TopString;
   
 	bool HasCodingBottom;  
 	double BottomLevel;
-	CString BottomString;
+	std::string BottomString;
 
 	bool HasWeightNoise;
         double WeightNoise;
 
         bool HasPram;           // Variable has Post RAndomization Method
-        CUIntArray PramValue;   // for every code a percentage
+        //CUIntArray PramValue;   // for every code a percentage
+        std::vector<unsigned int> PramValue;   // for every code a percentage
         long PramBandWidth;     // Number of codes (+ and -) in which code can be changed
 
 
 	//functions methods
 
-	bool  SetPosition(long lbPos, long lnPos, long lnDec);
-	bool  SetType(bool bIsCategorical, bool bIsNumeric, bool bIsWeight, bool bIsHHIdent, bool bIsHHVar);
-	void  SetMissingString(CString sMissing1, CString sMissing2);
-	bool  AddCode(const char *newcode, bool tail);
-	int   BinSearchStringArray(CStringArray &s, CString x, int nMissing, bool &IsMissing);
-	void  SortCodeLists();
-	bool  SetTableIndex(CString scode); 
-	int   GetnCodes(BOOL WithMissing);
-	void  UndoRecode();
-	bool  PrepareRecode();
-	int	AddRecode(const char *newcode);
-	int   MakeRecodelistEqualWidth(LPCTSTR sMissing1, LPCTSTR sMissing2);
-	int   FindCode(CString code,int nMissing, bool &IsMissing);
-	int	FindRecodedCode(CString code, int nMissing, bool &isMissing);
-	void	SortCode(int first, int last);
-	void  SortRecodedCode(int first, int last);
-	long	ComputeWidth(long nPos, long HHIdentOption, long nRecords);
+	bool   SetPosition(long lbPos, long lnPos, long lnDec);
+	bool   SetType(bool bIsCategorical, bool bIsNumeric, bool bIsWeight, bool bIsHHIdent, bool bIsHHVar);
+	void   SetMissingString(std::string sMissing1, std::string sMissing2);
+	bool   AddCode(const char *newcode, bool tail);
+	int    BinSearchStringArray(std::vector<std::string> &s, std::string x, int nMissing, bool &IsMissing);
+	void   SortCodeLists();
+	bool   SetTableIndex(std::string scode); 
+	int    GetnCodes(bool WithMissing);
+	void   UndoRecode();
+	bool   PrepareRecode();
+	int    AddRecode(const char *newcode);
+	int    MakeRecodelistEqualWidth(std::string sMissing1, std::string sMissing2);
+	int    FindCode(std::string code,int nMissing, bool &IsMissing);
+	int    FindRecodedCode(std::string code, int nMissing, bool &isMissing);
+	void   SortCode(int first, int last);
+	void   SortRecodedCode(int first, int last);
+	long   ComputeWidth(long nPos, long HHIdentOption, long nRecords);
 	double DoRound(double val);
 	double DoWeightNoise(double val);
 	
 private:
-	void QuickSortStringArray(CStringArray &s, int first, int last);
-	int  BinSearchStringArray(CString x, bool& IsMissing);
-	void AddSpacesBefore(CString& str, int len);
+	void QuickSortStringArray(std::vector<std::string> &s, int first, int last);
+	int  BinSearchStringArray(std::string x, bool& IsMissing);
+	void AddSpacesBefore(std::string& str, int len);
 };
 
 #endif

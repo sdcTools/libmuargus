@@ -1,57 +1,57 @@
 #include "Table.h"
+#include <assert.h>
+#include <string.h>
 
 bool CTable::SetVariables(long lnDim, long *ExplVar, long BirVarnr)
 {
-	nDim = lnDim;
+    nDim = lnDim;
 
-	for (int i = 0; i < nDim; i++) {
-		Varnr[i] = ExplVar[i] - 1;
-	}
+    for (int i = 0; i < nDim; i++) {
+	Varnr[i] = ExplVar[i] - 1;
+    }
 
-	BIRWeightVar = BirVarnr-1;
-  return true;
+    BIRWeightVar = BirVarnr-1;
+    return true;
 }
 
 bool CTable::CheckVarSequence()
 {
+    int i;
+    unsigned int v = Varnr[0];
 
+    for (i = 1; i < nDim; i++) {
+        if (Varnr[i] <= (int) v) return false;
+        v = Varnr[i];
+    }
 
-	int i;
-	UINT v = Varnr[0];
-
-  for (i = 1; i < nDim; i++) {
-    if (Varnr[i] <= (int) v) return false;
-    v = Varnr[i];
-  }
-
-  return true;
+    return true;
 }
 
 long CTable::GetMemSize()
 {
-	long MemSizeTable,j;
-	MemSizeTable = 1;
-	for (j = 0; j < nDim; j++) {
-      MemSizeTable *= SizeDim[j]; // number of codes of variable
+    long MemSizeTable,j;
+    MemSizeTable = 1;
+    for (j = 0; j < nDim; j++) {
+        MemSizeTable *= SizeDim[j]; // number of codes of variable
     }
-	return MemSizeTable;
+    return MemSizeTable;
 }
 
 bool CTable::PrepareTable()
 {
-	long MemSizeTable;
-	MemSizeTable = GetMemSize();
+    long MemSizeTable;
+    MemSizeTable = GetMemSize();
     //Cell = (long *) malloc(MemSizeTable * sizeof(long) );
-	Cell = new long [MemSizeTable];
-   if (Cell == 0) {
-	    return false;
-   }
-	if (IsBIR) {
+    Cell = new long [MemSizeTable];
+    if (Cell == 0) {
+        return false;
+    }
+    if (IsBIR) {
       //m_tab[i].BIRCell = (double *) malloc(MemSizeTable * sizeof(double) );
-		BIRCell = new double [MemSizeTable];
-		if (BIRCell == 0) {
-			return false;
-      }
+        BIRCell = new double [MemSizeTable];
+	if (BIRCell == 0) {
+            return false;
+        }
     }
 
     nCell = MemSizeTable;  // for ASSERT
@@ -59,35 +59,35 @@ bool CTable::PrepareTable()
     // make all cells zero
     memset(Cell, 0, MemSizeTable * sizeof(long) );
     if (IsBIR) {
-      memset(BIRCell, 0, MemSizeTable * sizeof(double) );
+        memset(BIRCell, 0, MemSizeTable * sizeof(double) );
     }
 
-	return true;
+    return true;
 }
 
 void CTable::FreeRecodedTable()
 {
-	if (Cell != 0) {
-      delete[] Cell;
-   }
-   if (BIRCell != 0) {
-		delete[] BIRCell;
-   }
-	Cell = 0;
-	BIRCell = 0;
+    if (Cell != 0) {
+        delete[] Cell;
+    }
+    if (BIRCell != 0) {
+	delete[] BIRCell;
+    }
+    Cell = 0;
+    BIRCell = 0;
 }
 
 long CTable::GetCellNr(int *DimNr)
 { 
-	long c = 0;
+    long c = 0;
 
-	for (int i = 0; i < nDim; i++) {
-		ASSERT(DimNr[i] >= 0 && DimNr[i] < SizeDim[i]);
-		c *= SizeDim[i];
-		c += DimNr[i];
-	}
+    for (int i = 0; i < nDim; i++) {
+	assert(DimNr[i] >= 0 && DimNr[i] < SizeDim[i]);
+	c *= SizeDim[i];
+	c += DimNr[i];
+    }
 
-	return c;
+    return c;
 }
 /*
 void CTable:: operator = (CTable & table2)

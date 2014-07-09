@@ -8,19 +8,18 @@ class CUCList
 public:
 	CUCList()
 	{
-		long i;
-		TabNr = 0;
-		nDim = 0;
-		for (i=0; i<MAXDIM; i++) {
-			Varnr[i] = 0;
-		}
-		Threshold = 0;
-		nUC = 0;
-		biggestThreshold = 0;
-		unsafe = 0;
-		HasPram = 0;
-		//table =0;
-
+            long i;
+            TabNr = 0;
+            nDim = 0;
+            for (i=0; i<MAXDIM; i++) {
+            	Varnr[i] = 0;
+            }
+            Threshold = 0;
+            nUC = 0;
+            biggestThreshold = 0;
+            unsafe = 0;
+            HasPram = 0;
+            //table =0;
 	}
 	~CUCList()
 	{

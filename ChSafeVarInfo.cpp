@@ -1,19 +1,21 @@
 #include "ChSafeVarInfo.h"
+#include <string>
+#include <vector>
+#include <stdio.h>
 
 void CChSafeVarInfo::SetVarIndex(long *lVarIndex) {
-	if (m_lNVar >0){
-		m_lVarIndex = new long[m_lNVar];
-		m_lVarIndex = lVarIndex;
-
-	}
+    if (m_lNVar >0){
+	m_lVarIndex = new long[m_lNVar];
+	m_lVarIndex = lVarIndex;
+    }
 }
 
-CString CChSafeVarInfo::GetStringFromFile()
+std::string CChSafeVarInfo::GetStringFromFile()
 {
 	FILE *fd;
-	CString cstr;
+	std::string cstr;
 	char str[MAXRECORD];
-	fd = fopen(m_sFileName,"r");
+	fd = fopen(m_sFileName.c_str(),"r");
 	fseek(fd,m_lCurrFilePos,SEEK_SET);
 	fgets(str,MAXRECORD,fd);
 	cstr = str;
@@ -25,39 +27,41 @@ CString CChSafeVarInfo::GetStringFromFile()
 bool CChSafeVarInfo::FillVariableCode()
 {
 	FILE *fd;
-	CString stempstr,stemp;
-	UCHAR str[MAXRECORD];
+	std::string stempstr,stemp;
+	char str[MAXRECORD];
 	long icount;
 	int iseppos;
-	// First Clear previos array
-	sVariableCode.RemoveAll();
-	sVariableCode.SetSize(m_lNVar);
-	fd = fopen(m_sFileName,"r");
+	// First Clear previous array
+	sVariableCode.clear();
+	sVariableCode.reserve(m_lNVar);
+	fd = fopen(m_sFileName.c_str(),"r");
 	fseek(fd,m_lCurrFilePos,SEEK_SET);
 
 
 	fgets((char *)str, MAXRECORD,fd);
-	stempstr = str;
-	iseppos = stempstr.Find(m_sSeperator,0);
+        stempstr = str;
+        
+	iseppos = stempstr.find(m_sSeperator,0);
 	icount = 0;
 	while (iseppos != -1)  {
-		stemp=stempstr.Left(iseppos);
-		sVariableCode.SetAt(icount,stemp);
-		icount ++;
-		stempstr.Delete (0,iseppos +1);
-		iseppos = stempstr.Find(m_sSeperator,0);
-
+            //stemp=stempstr.Left(iseppos);
+            stemp = stempstr.substr(0, iseppos);
+            //sVariableCode.SetAt(icount,stemp);
+            sVariableCode.at(icount) = stemp;
+            icount ++;
+            //stempstr.Delete (0,iseppos +1);
+            stempstr.erase(0,iseppos +1);
+            iseppos = stempstr.find(m_sSeperator,0);
+            if (iseppos == stempstr.npos) iseppos = -1; // std::string.find(x) returns npos if x is not found
 	}
 
-	if ((stempstr.GetLength() == 0) || (icount < m_lNVar-1)
-			|| (icount > m_lNVar-1))
+	if ((stempstr.length() == 0) || (icount < m_lNVar-1)	|| (icount > m_lNVar-1))
 	{
-		return false;
-
+            return false;
 	}
 	else
 	{
-		sVariableCode.SetAt(icount,stempstr);
+            sVariableCode.at(icount) = stempstr;
 	}
 	m_lCurrFilePos = ftell(fd);
 	fclose(fd);

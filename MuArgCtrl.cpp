@@ -1,54 +1,73 @@
-// NewMuArgCtrl.cpp : Implementation of CNewMuArgCtrl
-#include "NewMuArgCtrl.h"
+// MuArgCtrl.cpp : Implementation of CMuArgCtrl
+#include "MuArgCtrl.h"
+#include <stdio.h>
+#include <string>
+#include <vector>
+#include <string.h>
+#include <assert.h>
+
+
+std::string trimright(const string &t)
+{
+    string str = t;
+    size_t found;
+    found = str.find_last_not_of(" \n\r\t");
+    if (found != string::npos)
+    	str.erase(found+1);
+    else
+    	str.clear();            // str is all whitespace
+
+    return str;
+}
+
+std::string trimleft(const string &t)
+{
+    string str = t;
+    size_t found;
+    found = str.find_first_not_of(" \n\r\t");
+    if (found != string::npos)
+    	str.erase(0,found);
+    else
+    	str.clear();            // str is all whitespace
+
+    return str;
+
 
 /////////////////////////////////////////////////////////////////////////////
-// CNewMuArgCtrl
+// CMuArgCtrl
 
-void CNewMuArgCtrl::FireUpdateProgress(short Perc)
+void CMuArgCtrl::FireUpdateProgress(short Perc)
 {
 	Fire_UpdateProgress(Perc);
 }
 
 
-STDMETHODIMP CNewMuArgCtrl::SetNumberVar(long nvar, VARIANT_BOOL *pVal)
+bool CMuArgCtrl::SetNumberVar(long nvar)
 {
 //	CleanUp();  // in case of a second call very usefull
 
   m_nvar = nvar;
   m_var = new CVariable[m_nvar];
   if (m_var == 0) {
-    *pVal = VARIANT_FALSE;
-	 return S_OK;
+    return false;
   }
   m_ntab = 0;
   m_tab = 0;
 
   if (m_nvar <= 0)  {
-
-	  *pVal = VARIANT_FALSE;
-	 return S_OK;
+    return false;
   }
   else  {
-	  *pVal = VARIANT_TRUE;
-	 return S_OK;
+    return true;
   }
-
 }
 
-STDMETHODIMP CNewMuArgCtrl::SetVariable(long Index, long bPos, long nPos,
-													 long nDec, BSTR Missing1, BSTR Missing2,
-													 VARIANT_BOOL IsHHIdent,
-													 VARIANT_BOOL IsHHVar,
-													 VARIANT_BOOL IsCategorical,
-													 VARIANT_BOOL IsNumeric,
-													 VARIANT_BOOL IsWeight,
-													 long RelatedVar, VARIANT_BOOL *pVal)
+bool CMuArgCtrl::SetVariable(long Index, long bPos, long nPos, long nDec, std::string Missing1, std::string Missing2,
+				bool IsHHIdent, bool IsHHVar, bool IsCategorical, bool IsNumeric, bool IsWeight, long RelatedVar)
 {
-
-
 	long i = Index - 1;
-	CString sMissing1 = Missing1;
-	CString sMissing2 = Missing2;
+	std::string sMissing1 = Missing1;
+	std::string sMissing2 = Missing2;
 	bool bIsHHIdent,bIsHHVar,bIsCategorical,bIsNumeric,bIsWeight;
 
 	if (IsHHIdent) {
@@ -88,22 +107,19 @@ STDMETHODIMP CNewMuArgCtrl::SetVariable(long Index, long bPos, long nPos,
 
   // Not the right moment, first call SetNumberVar
 	if (m_nvar == 0) {
-		*pVal = VARIANT_FALSE;
-		return S_OK;
+		return false;
 	}
 
 	if (Index < 1 || Index > m_nvar || bPos < 1 ||
 		nDec < 0 || nPos < 1 || nPos >= MAXCODEWIDTH) {
-		*pVal = VARIANT_FALSE;
-		return S_OK;
+		return false;
 	}
 	m_var[i].SetPosition(bPos,nPos,nDec);
 
 	if (IsCategorical || (IsNumeric && !IsWeight) ) {
 		 // missings both empty?
 		if (Missing1[0] == 0 && Missing2[0] == 0) {
-			*pVal = VARIANT_FALSE;
-			return S_OK;
+			return false;
 		}
 		m_var[i].SetMissingString(sMissing1,sMissing2);
 	}
@@ -114,286 +130,268 @@ STDMETHODIMP CNewMuArgCtrl::SetVariable(long Index, long bPos, long nPos,
 		m_bHasHH = true;
 	}
 	if (IsHHVar) {
-		m_HHVars.Add(i);
+		m_HHVars.push_back(i);
 	}
-    m_var[i].RelatedTo = RelatedVar - 1;
-	*pVal = VARIANT_TRUE;
+        m_var[i].RelatedTo = RelatedVar - 1;
 
-	return S_OK;
+	return true;
 }
 
-STDMETHODIMP CNewMuArgCtrl::ExploreFile(BSTR FileName, long *ErrorCode, long *LineNumber, long *VarIndex, VARIANT_BOOL *pVal)
+bool CMuArgCtrl::ExploreFile(std::string FileName, long *ErrorCode, long *LineNumber, long *VarIndex)
 {
-	long tempNumberofHH = 0;
-	CString sFileName;
-	sFileName = FileName;
-	FILE *fd;
-	UCHAR str[MAXRECORDLENGTH];
-	int i, length, recnr = 0, varindex;
+    long tempNumberofHH = 0;
+    std::string sFileName;
+    sFileName = FileName;
+    FILE *fd;
+    char str[MAXRECORDLENGTH];
+    int i, length, recnr = 0, varindex;
 
-	*ErrorCode = *LineNumber = *VarIndex = 0;
+    *ErrorCode = *LineNumber = *VarIndex = 0;
 
-	if (m_nvar == 0) {
-		*ErrorCode = NOVARIABLES;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
+    if (m_nvar == 0) {
+	*ErrorCode = NOVARIABLES;
+	return false;
+    }
 
-	fd = fopen(sFileName, "r");
-	if (fd == 0) {
-		 *ErrorCode = FILENOTFOUND;
-		 *pVal = VARIANT_FALSE;
-			return S_OK;
-	}
+    fd = fopen(sFileName.c_str(), "r");
+    if (fd == 0) {
+        *ErrorCode = FILENOTFOUND;
+        return false;
+    }
 
-	fseek(fd, 0, SEEK_END);
-	m_fSize = ftell(fd);
+    fseek(fd, 0, SEEK_END);
+    m_fSize = ftell(fd);
 
-
-
-
-	rewind(fd);
+    rewind(fd);
   // read first record to determine the fixed recordlength
-	str[0] = 0;
-	fgets((char *)str, MAXRECORDLENGTH, fd);
-	if (str[0] == 0) {
-		*ErrorCode = EMPTYFILE;
-		goto error;
-	}
+    str[0] = 0;
+    fgets((char *)str, MAXRECORDLENGTH, fd);
+    if (str[0] == 0) {
+	*ErrorCode = EMPTYFILE;
+	goto error;
+    }
 
-	length = strlen((char *)str) - 1;
-	while (length > 0 && str[length] < ' ') length--;
-	m_fixedlength = length + 1;
-	if (length == 0) {
-		*ErrorCode = EMPTYFILE; // first record empty
-		goto error;
-	}
+    length = strlen((char *)str) - 1;
+    
+    while (length > 0 && str[length] < ' ') length--;
+    m_fixedlength = length + 1;
+    if (length == 0) {
+	*ErrorCode = EMPTYFILE; // first record empty
+	goto error;
+    }
 
   // record length oke?
-
-	for (i = 0; i < m_nvar; i++) {
-		if (m_InFileIsFixedFormat) {
-			if (m_var[i].bPos + m_var[i].nPos > m_fixedlength) {
-				*ErrorCode = RECORDTOOSHORT;
-				goto error;
-			}
-		}
+    for (i = 0; i < m_nvar; i++) {
+	if (m_InFileIsFixedFormat) {
+            if (m_var[i].bPos + m_var[i].nPos > m_fixedlength) {
+		*ErrorCode = RECORDTOOSHORT;
+		goto error;
+            }
+	}
     // initialize Min and Max Value for Numerics
-    if (m_var[i].IsNumeric) {
-      m_var[i].MaxValue = -DBL_MAX;
-      m_var[i].MinValue = DBL_MAX;
-
+        if (m_var[i].IsNumeric) {
+            m_var[i].MaxValue = -DBL_MAX;
+            m_var[i].MinValue = DBL_MAX;
+        }
     }
-  }
 
     int res;
-	rewind(fd);
-	if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)) {
-    res = ReadMicroRecord(fd, str);
-	}
+    rewind(fd);
+    if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)) {
+        res = ReadMicroRecord(fd, str);
+    }
 
-  while (!feof(fd) ) {
-    res = ReadMicroRecord(fd, str);
-    switch (res) {
-    case INFILE_ERROR:
-      recnr++;
-      *ErrorCode = WRONGLENGTH;
-      *LineNumber = recnr;
-      goto error;
-    case  INFILE_EOF:
-      goto oke;
-    case  INFILE_OKE:
-      recnr++;
+    while (!feof(fd) ) {
+        res = ReadMicroRecord(fd, str);
+        switch (res) {
+            case INFILE_ERROR:
+                recnr++;
+                *ErrorCode = WRONGLENGTH;
+                *LineNumber = recnr;
+                goto error;
+            case  INFILE_EOF:
+                goto oke;
+            case  INFILE_OKE:
+                recnr++;
 //		if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)&&(recnr == 1)) {
 //			continue;
 //		}
 //		else {
-			if (recnr % FIREPROGRESS == 0) {
-			  FireUpdateProgress((short)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
-			}
-			if (m_bHasHH) {
-				if (!NumberOfHH(str, tempNumberofHH) )	{
-					goto error;
-				}
-			}
-			if (!DoMicroRecord(str, &varindex) ) {
-			  *ErrorCode = WRONGRECORD;
-			  *LineNumber = recnr;
-			  *VarIndex = varindex;
-			  goto error;
-			}
-      break;
-//		}
-    }
-  }
-
-  oke:
-  fclose(fd);
-  m_nRecFile = recnr;
-  m_NumberofRecs = recnr;
-  if (m_bHasHH) 	{
-		m_lNumberOfHH = tempNumberofHH +1; // for the last household
-			// terug zetten
-		CurrentHHName =  "";
-		LastHHName = "";
-  }
-  for (i = 0; i < m_nvar; i++) {
-    if (m_var[i].IsCategorical) {
-      m_var[i].AddCode((LPCTSTR) m_var[i].Missing1, true);
-      m_var[i].AddCode((LPCTSTR) m_var[i].Missing2, true);
-    }
-
-	 m_var[i].nCode = m_var[i].sCode.GetSize();  // save for later use
-  }
-  FireUpdateProgress(100);  // for progressbar in container
-	strcpy(m_fname, sFileName);
-
-
-
-	for (i = 0; i < m_nvar; i++) {
-		m_var[i].SortCodeLists();
-	}
-
-
-
-	*pVal = VARIANT_TRUE;
-	return S_OK;
-	error:
-	fclose(fd);
-	*pVal = VARIANT_FALSE;
-	return S_OK;
-}
-
-int CNewMuArgCtrl::ReadMicroRecord(FILE *fd, UCHAR *str)
-{ int length = 0;
-
-  while (length == 0) {
-    str[0] = 0;
-    fgets((char *)str, MAXRECORDLENGTH, fd);
-    if (str[0] == 0) return INFILE_EOF;
-    length = strlen((char *)str) - 1;
-    while (length > 0 && str[length] < ' ') length--;
-    if (length == 0) continue;  // skip empty records
-    str[length + 1] = 0;
-	 if (m_InFileIsFixedFormat) {
-		if (length  + 1 != m_fixedlength) {
-			return INFILE_ERROR;
+		if (recnr % FIREPROGRESS == 0) {
+                    FireUpdateProgress((short)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
 		}
-	 }
-  }
-
-  return INFILE_OKE;
-}
-
-BOOL CNewMuArgCtrl::DoMicroRecord(UCHAR *str, int *varindex)
-{ int i, bp, ap;
-  char code[MAXCODEWIDTH];
-  CVariable *var;
-  CString tempcode;
-
-  for (i = 0; i < m_nvar; i++) {
-		*varindex = i + 1;
-		var = &(m_var[i]);
-		if (var->IsCategorical || var->IsNumeric) {
-		if(m_InFileIsFixedFormat) {
-			bp = var->bPos;         // startposition
-			ap = var->nPos;         // number of positions
-			strncpy(code, (const char *)&str[bp], ap); // get code from record
-			code[ap] = 0;
-		 }
-		else {
-			ap = var->nPos;         // number of positions
-			if (ReadVariableFreeFormat(str,i,&(tempcode))) {
-				strcpy(code,(const char*)tempcode);
-				code[ap] = 0;
-			 }
+		if (m_bHasHH) {
+                    if (!NumberOfHH(str, tempNumberofHH) )	{
+                        goto error;
+                    }
 		}
-    }
-	 else {
-      continue;
-    }
-
-// Alleen toevoegen als het geen missing code is!!!!! ANCO
-
-
-    if (var->IsCategorical) { // only a categorical var has a codelist
-		if ((code != var->Missing1) && (code != var->Missing2))
-		{
-		//if (var->AddCode(i, code, false) ) {   // adds if new, else does nothing
-			if (!(var->AddCode(code,false))){
-				return false;
-			}
+		if (!DoMicroRecord(str, &varindex) ) {
+                    *ErrorCode = WRONGRECORD;
+                    *LineNumber = recnr;
+                    *VarIndex = varindex;
+                     goto error;
 		}
-    }
-
-    if (var->IsNumeric) {
-      double d;
-      // exclude missings for calculating min/max
-      if (strcmp(code, (LPCTSTR) var->Missing1) != 0 &&
-          strcmp(code, (LPCTSTR) var->Missing2) != 0 ) {
-        if (!ConvertNumeric(code, d) ) {
-          return false;   // is not numeric!
+                break;
         }
-        if (d > var->MaxValue) var->MaxValue = d;
-        if (d < var->MinValue) var->MinValue = d;
-      }
     }
-  }
 
-  return true;
+    oke:
+    fclose(fd);
+    m_nRecFile = recnr;
+    m_NumberofRecs = recnr;
+    if (m_bHasHH){
+        m_lNumberOfHH = tempNumberofHH +1; // for the last household
+        // terug zetten
+        CurrentHHName =  "";
+        LastHHName = "";
+    }
+    for (i = 0; i < m_nvar; i++) {
+        if (m_var[i].IsCategorical) {
+            m_var[i].AddCode(m_var[i].Missing1.c_str(), true);
+            m_var[i].AddCode(m_var[i].Missing2.c_str(), true);
+        }
+
+        m_var[i].nCode = m_var[i].sCode.size();  // save for later use
+    }
+    FireUpdateProgress(100);  // for progressbar in container
+    strcpy(m_fname, sFileName.c_str());
+
+    for (i = 0; i < m_nvar; i++) {
+	m_var[i].SortCodeLists();
+    }
+    return true;
+    
+    error:
+    fclose(fd);
+    return false;
 }
 
-bool CNewMuArgCtrl::ReadVariableFreeFormat(UCHAR *Str, long VarIndex, CString *VarCode)
+int CMuArgCtrl::ReadMicroRecord(FILE *fd, char *str)
 {
+    int length = 0;
 
-	CStringArray VarCodes;
-	CString stempstr, stemp, tempvarcode;
-	CVariable *var;
-	VarCodes.SetSize(m_nvar);
-	stempstr = Str;
-	int inrem;
-	long lseppos;
-	long lcount= 0;
-	if (m_InFileSeperator  != " ") {
-		lseppos = stempstr.Find(m_InFileSeperator,0);
-		while (lseppos != -1) {
-			stemp = stempstr.Left(lseppos);
-			VarCodes.SetAt(lcount,stemp);
-			stempstr.Delete(0,lseppos + 1);
-			lcount ++;
-			lseppos = stempstr.Find(m_InFileSeperator, 0);
-		}
-		//fill the stuff here
-		if ((stempstr.GetLength() == 0) || (lcount <m_nvar - 1)
-			|| (lcount >= m_nvar)) {
-			// string too short or too long
+    while (length == 0) {
+        str[0] = 0;
+        fgets(str, MAXRECORDLENGTH, fd);
+        if (str[0] == 0) return INFILE_EOF;
+        length = strlen(str) - 1;
+        while (length > 0 && str[length] < ' ') length--;
+        if (length == 0) continue;  // skip empty records
+        str[length + 1] = 0;
+        if (m_InFileIsFixedFormat) {
+            if (length  + 1 != m_fixedlength) {
+		return INFILE_ERROR;
+            }
+        }
+    }
+    return INFILE_OKE;
+}
 
-			return false;
+bool CMuArgCtrl::DoMicroRecord(char *str, int *varindex)
+{ 
+    int i, bp, ap;
+    char code[MAXCODEWIDTH];
+    CVariable *var;
+    std::string tempcode;
+
+    for (i = 0; i < m_nvar; i++) {
+	*varindex = i + 1;
+	var = &(m_var[i]);
+	if (var->IsCategorical || var->IsNumeric) {
+            if(m_InFileIsFixedFormat) {
+                bp = var->bPos;         // startposition
+                ap = var->nPos;         // number of positions
+                strncpy(code, (const char *)&str[bp], ap); // get code from record
+                code[ap] = 0;
+            }
+            else {
+                ap = var->nPos;         // number of positions
+		if (ReadVariableFreeFormat(str,i,&(tempcode))) {
+                    strcpy(code,(const char*)tempcode.c_str());
+                    code[ap] = 0;
 		}
-		else {
-			VarCodes.SetAt(lcount,stempstr);
+            }
+        }
+	else {
+            continue;
+        }
+
+        // Only add if not Missing code!!!!! ANCO
+        if (var->IsCategorical) { // only a categorical var has a codelist
+            if ((code != var->Missing1) && (code != var->Missing2))
+            {
+		//if (var->AddCode(i, code, false) ) {   // adds if new, else does nothing
+                if (!(var->AddCode(code,false))){
+                    return false;
 		}
-		tempvarcode = VarCodes.GetAt(VarIndex);
-		tempvarcode.TrimLeft();
-		tempvarcode.TrimRight();
-		inrem = tempvarcode.Remove('"');
-		ASSERT ((inrem == 2) || (inrem == 0));
-		var = &(m_var[VarIndex]);
-		AddSpacesBefore(tempvarcode,var->nPos);
-		//Now add leading spaces
-		*VarCode = tempvarcode;
-		return true;
+            }
+        }
+
+        if (var->IsNumeric) {
+            double d;
+      // exclude missings for calculating min/max
+            if (strcmp(code, var->Missing1.c_str()) != 0 && strcmp(code, var->Missing2.c_str()) != 0 ) {
+                if (!ConvertNumeric(code, d) ) return false;   // is not numeric!
+
+                if (d > var->MaxValue) var->MaxValue = d;
+                if (d < var->MinValue) var->MinValue = d;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool CMuArgCtrl::ReadVariableFreeFormat(char *Str, long VarIndex, std::string *VarCode)
+{
+    std::vector<std::string> VarCodes;
+    std::string stempstr, stemp, tempvarcode;
+    CVariable *var;
+    VarCodes.SetSize(m_nvar);
+    stempstr = Str;
+    int inrem;
+    long lseppos;
+    long lcount= 0;
+    if (m_InFileSeperator  != " ") {
+	lseppos = stempstr.find(m_InFileSeperator,0);
+	while (lseppos != -1) {
+            stemp = stempstr.substr(0,lseppos);
+            VarCodes.at(lcount) = stemp;
+            stempstr.erase(0, lseppos + 1);
+            lcount ++;
+            lseppos = stempstr.find(m_InFileSeperator, 0);
+            if (lseppos == stempstr.npos) lseppos = -1; // std::string.find returns npos if nothing found
+	}
+	//fill the stuff here
+	if ((stempstr.length() == 0) || (lcount <m_nvar - 1) || (lcount >= m_nvar)) {
+            // string too short or too long
+            return false;
 	}
 	else {
-		return false;
+            VarCodes.at(lcount) = stempstr;
 	}
-
-
+	tempvarcode = VarCodes.at(VarIndex);
+	//tempvarcode.TrimLeft();
+        tempvarcode = trimleft(tempvarcode);
+	//tempvarcode.TrimRight();
+        tempvarcode = trimright(tempvarcode);
+        std::remove_if ????
+	inrem = tempvarcode.Remove('"');
+	assert ((inrem == 2) || (inrem == 0));
+	var = &(m_var[VarIndex]);
+	AddSpacesBefore(tempvarcode,var->nPos);
+	//Now add leading spaces
+	*VarCode = tempvarcode;
+	return true;
+    }
+    else {
+        return false;
+    }
 }
 
 
 
-bool CNewMuArgCtrl::ConvertNumeric(char *code, double &d)
+bool CMuArgCtrl::ConvertNumeric(char *code, double &d)
 
 { char *stop;
 
@@ -409,7 +407,7 @@ bool CNewMuArgCtrl::ConvertNumeric(char *code, double &d)
   return true;
 }
 
-void CNewMuArgCtrl::AddSpacesBefore(CString& str, int len)
+void CMuArgCtrl::AddSpacesBefore(CString& str, int len)
 { int width = str.GetLength();
 
   if (width >= len) return;  // nothing to do
@@ -419,7 +417,7 @@ void CNewMuArgCtrl::AddSpacesBefore(CString& str, int len)
     str.Insert(0, tempstr);
   }
 }
-void CNewMuArgCtrl::AddSpacesBefore(char *str, int len)
+void CMuArgCtrl::AddSpacesBefore(char *str, int len)
 { int lstr = strlen(str);
 
   if (lstr >= len) return;  // nothing to do
@@ -431,7 +429,7 @@ void CNewMuArgCtrl::AddSpacesBefore(char *str, int len)
 
 
 
-STDMETHODIMP CNewMuArgCtrl::SetNumberTab(long nTab, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::SetNumberTab(long nTab, VARIANT_BOOL *pVal)
 {
   if (m_nvar == 0 || nTab < 1) {
 		*pVal = VARIANT_FALSE;
@@ -454,14 +452,14 @@ STDMETHODIMP CNewMuArgCtrl::SetNumberTab(long nTab, VARIANT_BOOL *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::CleanAll()
+STDMETHODIMP CMuArgCtrl::CleanAll()
 {
 	CleanUp();
 
 	return S_OK;
 }
 
-void CNewMuArgCtrl::CleanUp()
+void CMuArgCtrl::CleanUp()
 {
 
 	for (int i = 0; i < m_nUC; i++) {
@@ -524,7 +522,7 @@ void CNewMuArgCtrl::CleanUp()
 
 
 
-void CNewMuArgCtrl::CleanVars()
+void CMuArgCtrl::CleanVars()
 {
 
 	if (m_nvar > 0) {
@@ -542,7 +540,7 @@ void CNewMuArgCtrl::CleanVars()
 
 
 
-void CNewMuArgCtrl::CleanTables()
+void CMuArgCtrl::CleanTables()
 {
   // also free the used Cells from the tables
    if (m_ntab != 0) {
@@ -561,7 +559,7 @@ void CNewMuArgCtrl::CleanTables()
   m_ntab = 0;
 }
 
-STDMETHODIMP CNewMuArgCtrl::SetTable(long TabIndex, long Threshold,
+STDMETHODIMP CMuArgCtrl::SetTable(long TabIndex, long Threshold,
 												 long nDim, long *VarList,
 												 VARIANT_BOOL IsBIR,
 												 long BIRWeightVarIndex,
@@ -644,7 +642,7 @@ STDMETHODIMP CNewMuArgCtrl::SetTable(long TabIndex, long Threshold,
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::BaseIndividualRisk(long fk, double Fk, double *risk, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::BaseIndividualRisk(long fk, double Fk, double *risk, VARIANT_BOOL *pVal)
 {
 		double p; long r; double q; double x1; double x2; long i;
 
@@ -758,7 +756,7 @@ ready:
 
 }
 
-STDMETHODIMP CNewMuArgCtrl::ComputeTables(long *ErrorCode, long *TableIndex, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::ComputeTables(long *ErrorCode, long *TableIndex, VARIANT_BOOL *pVal)
 {
 
 	long MemSizeAll = 0, MemSizeTable;
@@ -946,7 +944,7 @@ oke1:
 
 
 
-BOOL CNewMuArgCtrl::ComputeTableIndex(UCHAR *str, CVariable *var, long Index)
+BOOL CMuArgCtrl::ComputeTableIndex(UCHAR *str, CVariable *var, long Index)
 { char code[MAXCODEWIDTH];
 
   bool IsMissing;
@@ -970,7 +968,7 @@ BOOL CNewMuArgCtrl::ComputeTableIndex(UCHAR *str, CVariable *var, long Index)
 }
 
 
-void CNewMuArgCtrl::FillTables(UCHAR *str)
+void CMuArgCtrl::FillTables(UCHAR *str)
 { int i, j;
   double Weight = 0;
 
@@ -1019,7 +1017,7 @@ void CNewMuArgCtrl::FillTables(UCHAR *str)
   }
 }
 
-void CNewMuArgCtrl::AddTableCell(CTable& t, double Weight)
+void CMuArgCtrl::AddTableCell(CTable& t, double Weight)
 { int i, cellindex = 0;
   CString code;
   int SizeDim[MAXDIM];
@@ -1043,7 +1041,7 @@ void CNewMuArgCtrl::AddTableCell(CTable& t, double Weight)
   }
 }
 
-int CNewMuArgCtrl::ComputeSubTableList()
+int CMuArgCtrl::ComputeSubTableList()
 {
 	int i;
    int vars[MAXDIM];
@@ -1193,7 +1191,7 @@ int CNewMuArgCtrl::ComputeSubTableList()
 }
 
 
-void CNewMuArgCtrl::DoSubTableList(int iTab, int niv, int from, int *vars, int CVar)
+void CMuArgCtrl::DoSubTableList(int iTab, int niv, int from, int *vars, int CVar)
 {
 	int i, j;
 
@@ -1235,7 +1233,7 @@ void CNewMuArgCtrl::DoSubTableList(int iTab, int niv, int from, int *vars, int C
 
 }
 
-int CNewMuArgCtrl::ComputeSubTable(CTable &BaseTable, CTable &SubTable)
+int CMuArgCtrl::ComputeSubTable(CTable &BaseTable, CTable &SubTable)
 {
 
 	int i, j;
@@ -1280,7 +1278,7 @@ int CNewMuArgCtrl::ComputeSubTable(CTable &BaseTable, CTable &SubTable)
 	return true;
 }
 
-void CNewMuArgCtrl::MakeSubTable(
+void CMuArgCtrl::MakeSubTable(
               CTable& BaseTab, CTable& SubTab,
               int niv, int iParentCell, int iSubCell, int *tabvars)
 {
@@ -1320,13 +1318,13 @@ void CNewMuArgCtrl::MakeSubTable(
 	} // forloop with i = index code of a variable
 }
 
-BOOL CNewMuArgCtrl::ComputeUnsafeCells(CTable & t, int CVar)
+BOOL CMuArgCtrl::ComputeUnsafeCells(CTable & t, int CVar)
 {
 	ComputeNumberUnsafeCells(t, 0, 0, false, CVar);
 	return true;
 }
 
-void CNewMuArgCtrl::ComputeNumberUnsafeCells(CTable & t, int niv, int cindex,
+void CMuArgCtrl::ComputeNumberUnsafeCells(CTable & t, int niv, int cindex,
 											 BOOL IsMissingCode, int CVar, int code)
 {
 	ASSERT(CVar < m_nvar);
@@ -1384,7 +1382,7 @@ void CNewMuArgCtrl::ComputeNumberUnsafeCells(CTable & t, int niv, int cindex,
 
 }
 
-void CNewMuArgCtrl::SortUCList(int n, CUCList *uc)
+void CMuArgCtrl::SortUCList(int n, CUCList *uc)
 {
 	if (n > 1) {
 		QuickSortUCList(uc, 0, n - 1);
@@ -1392,7 +1390,7 @@ void CNewMuArgCtrl::SortUCList(int n, CUCList *uc)
 }
 
 
-void CNewMuArgCtrl::QuickSortUCList(CUCList *s, int first, int last)
+void CMuArgCtrl::QuickSortUCList(CUCList *s, int first, int last)
 {
 	int i, j;
   CUCList mid, temp;
@@ -1433,7 +1431,7 @@ void CNewMuArgCtrl::QuickSortUCList(CUCList *s, int first, int last)
   } while (first < last);
 }
 
-int CNewMuArgCtrl::CompareUCListThres(CUCList& a, CUCList& b)
+int CMuArgCtrl::CompareUCListThres(CUCList& a, CUCList& b)
 {
 	int v;
 
@@ -1444,12 +1442,12 @@ int CNewMuArgCtrl::CompareUCListThres(CUCList& a, CUCList& b)
 
 }
 
-int CNewMuArgCtrl::CompareUCList(CUCList& a, CUCList& b)
+int CMuArgCtrl::CompareUCList(CUCList& a, CUCList& b)
 {
 	return memcmp(a.Varnr, b.Varnr, sizeof(a.Varnr) );
 }
 
-STDMETHODIMP CNewMuArgCtrl::GetMaxnUC(long *pVal)
+STDMETHODIMP CMuArgCtrl::GetMaxnUC(long *pVal)
 {
 	int i, max = 0;
 
@@ -1469,7 +1467,7 @@ STDMETHODIMP CNewMuArgCtrl::GetMaxnUC(long *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::UnsafeVariable(long VarIndex, long *Count, long *UCArray, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::UnsafeVariable(long VarIndex, long *Count, long *UCArray, VARIANT_BOOL *pVal)
 {
 	int ndim, i, j, nUnsafe, v = VarIndex - 1, counter;
 	bool tabsfound, varfound = false;
@@ -1527,7 +1525,7 @@ STDMETHODIMP CNewMuArgCtrl::UnsafeVariable(long VarIndex, long *Count, long *UCA
 
 }
 
-STDMETHODIMP CNewMuArgCtrl::UnsafeVariablePrepare(long VarIndex, long *nCode, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::UnsafeVariablePrepare(long VarIndex, long *nCode, VARIANT_BOOL *pVal)
 {
 	int v = VarIndex - 1;
 	int i, j, nCodes;
@@ -1617,7 +1615,7 @@ STDMETHODIMP CNewMuArgCtrl::UnsafeVariablePrepare(long VarIndex, long *nCode, VA
 
 
 
-STDMETHODIMP CNewMuArgCtrl::UnsafeVariableCodes(long VarIndex, long CodeIndex, long *IsMissing, long *Freq, BSTR *Code, long *Count, long *UCArray, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::UnsafeVariableCodes(long VarIndex, long CodeIndex, long *IsMissing, long *Freq, BSTR *Code, long *Count, long *UCArray, VARIANT_BOOL *pVal)
 {
 	int v = VarIndex - 1;
    int c = CodeIndex - 1;
@@ -1670,7 +1668,7 @@ STDMETHODIMP CNewMuArgCtrl::UnsafeVariableCodes(long VarIndex, long CodeIndex, l
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::UnsafeVariableClose(long VarIndex, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::UnsafeVariableClose(long VarIndex, VARIANT_BOOL *pVal)
 {
 	int v = VarIndex - 1;
 
@@ -1690,7 +1688,7 @@ STDMETHODIMP CNewMuArgCtrl::UnsafeVariableClose(long VarIndex, VARIANT_BOOL *pVa
 
 }
 
-STDMETHODIMP CNewMuArgCtrl::DoRecode(long VarIndex, BSTR RecodeString,
+STDMETHODIMP CMuArgCtrl::DoRecode(long VarIndex, BSTR RecodeString,
 												 BSTR eMissing1, BSTR eMissing2, long *ErrorType,
 												 long *ErrorLine, long *ErrorPos, BSTR *WarningString,
 												 VARIANT_BOOL *pVal)
@@ -1947,7 +1945,7 @@ STDMETHODIMP CNewMuArgCtrl::DoRecode(long VarIndex, BSTR RecodeString,
 ///         DESTCODE    compute ans sort dest code
 ///         SRCCODE     compute link between src and dest code
 
-BOOL CNewMuArgCtrl::ParseRecodeString(long VarIndex, LPCTSTR RecodeString, long FAR* ErrorType, long FAR* ErrorLine, long FAR* ErrorPos, int Phase)
+BOOL CMuArgCtrl::ParseRecodeString(long VarIndex, LPCTSTR RecodeString, long FAR* ErrorType, long FAR* ErrorLine, long FAR* ErrorPos, int Phase)
 { char *p;
   int PosInString = 0, LineNumber = 1;
   int oke;
@@ -1969,7 +1967,7 @@ BOOL CNewMuArgCtrl::ParseRecodeString(long VarIndex, LPCTSTR RecodeString, long 
 }
 
 // Parse a line of a recode string (until str[i] == 0 || str[i] == '\n' || str[i] == '\r')
-BOOL CNewMuArgCtrl::ParseRecodeStringLine(long VarIndex, LPCTSTR str, long FAR* ErrorType, long FAR* ErrorPos, int Phase)
+BOOL CMuArgCtrl::ParseRecodeStringLine(long VarIndex, LPCTSTR str, long FAR* ErrorType, long FAR* ErrorPos, int Phase)
 { int i = 0, len = strlen(str), res, fromto, position;
   int nPos = m_var[VarIndex].nPos;
 
@@ -2060,7 +2058,7 @@ BOOL CNewMuArgCtrl::ParseRecodeStringLine(long VarIndex, LPCTSTR str, long FAR* 
 }
 
 
-int CNewMuArgCtrl::SetCode2Recode(int VarIndex, char *DestCode,
+int CMuArgCtrl::SetCode2Recode(int VarIndex, char *DestCode,
 										 char *SrcCode1, char *SrcCode2, int fromto)
 {
 	CVariable *v = &(m_var[VarIndex]);
@@ -2156,7 +2154,7 @@ int CNewMuArgCtrl::SetCode2Recode(int VarIndex, char *DestCode,
 
 }
 
-int CNewMuArgCtrl::ReadWord(LPCTSTR str, char* CodeFrom, char *CodeTo, char EndCode, int& fromto, int& pos)
+int CMuArgCtrl::ReadWord(LPCTSTR str, char* CodeFrom, char *CodeTo, char EndCode, int& fromto, int& pos)
 { int i = 0, j, pass = 0;
   char *p;
 
@@ -2270,7 +2268,7 @@ int CNewMuArgCtrl::ReadWord(LPCTSTR str, char* CodeFrom, char *CodeTo, char EndC
   return i; // oke, return current position
 }
 
-STDMETHODIMP CNewMuArgCtrl::UndoRecode(long VarIndex, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::UndoRecode(long VarIndex, VARIANT_BOOL *pVal)
 {
 	int v = VarIndex - 1;
 
@@ -2296,7 +2294,7 @@ STDMETHODIMP CNewMuArgCtrl::UndoRecode(long VarIndex, VARIANT_BOOL *pVal)
 
 }
 
-void CNewMuArgCtrl::SetTableHasRecode()
+void CMuArgCtrl::SetTableHasRecode()
 {
 	int t, v;
 
@@ -2311,7 +2309,7 @@ void CNewMuArgCtrl::SetTableHasRecode()
 }
 
 
-STDMETHODIMP CNewMuArgCtrl::DoTruncate(long VarIndex, long nPos, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::DoTruncate(long VarIndex, long nPos, VARIANT_BOOL *pVal)
 {
 	int i, v = VarIndex - 1;
 	int VarWidth, nCode, NewWidth;
@@ -2374,7 +2372,7 @@ STDMETHODIMP CNewMuArgCtrl::DoTruncate(long VarIndex, long nPos, VARIANT_BOOL *p
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::ApplyRecode()
+STDMETHODIMP CMuArgCtrl::ApplyRecode()
 {
 	ComputeRecodeTables();
 	ComputeSubTableList();
@@ -2382,7 +2380,7 @@ STDMETHODIMP CNewMuArgCtrl::ApplyRecode()
 	return S_OK;
 }
 
-BOOL CNewMuArgCtrl::ComputeRecodeTables()
+BOOL CMuArgCtrl::ComputeRecodeTables()
 {
 	int i, d, nRecodes = 0;
 
@@ -2431,7 +2429,7 @@ BOOL CNewMuArgCtrl::ComputeRecodeTables()
   return true;
 }
 
-BOOL CNewMuArgCtrl::ComputeRecodeTable(CTable & srctab, CTable & dsttab)
+BOOL CMuArgCtrl::ComputeRecodeTable(CTable & srctab, CTable & dsttab)
 {
 	if (!dsttab.PrepareTable()) {
 		return false;
@@ -2440,7 +2438,7 @@ BOOL CNewMuArgCtrl::ComputeRecodeTable(CTable & srctab, CTable & dsttab)
 	return true;
 }
 
-void CNewMuArgCtrl::ComputeRecodeTableCells(CTable & srctab, CTable & dsttab,
+void CMuArgCtrl::ComputeRecodeTableCells(CTable & srctab, CTable & dsttab,
 													  int niv, int iCellSrc, int iCellDst)
 {
 	int i, desti, nDim = srctab.nDim;
@@ -2481,7 +2479,7 @@ void CNewMuArgCtrl::ComputeRecodeTableCells(CTable & srctab, CTable & dsttab,
 }
 
 
-STDMETHODIMP CNewMuArgCtrl::WriteVariablesInFile(BSTR FileNameMicro, BSTR FileNameOut, long nVar, long *VarIndexes, BSTR seperator, long *ErrorCode, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::WriteVariablesInFile(BSTR FileNameMicro, BSTR FileNameOut, long nVar, long *VarIndexes, BSTR seperator, long *ErrorCode, VARIANT_BOOL *pVal)
 {
 	CString sFileNameMicro, sFileNameOut, sseperator;
 	sFileNameMicro = FileNameMicro;
@@ -2584,7 +2582,7 @@ STDMETHODIMP CNewMuArgCtrl::WriteVariablesInFile(BSTR FileNameMicro, BSTR FileNa
 		return S_OK;
 }
 
-BOOL CNewMuArgCtrl::WriteVariablesFromMicroRecord(UCHAR *str, FILE *fdout, long *VarIndexes,
+BOOL CMuArgCtrl::WriteVariablesFromMicroRecord(UCHAR *str, FILE *fdout, long *VarIndexes,
 															  long nVar, CString seperator)
 {
 	// change this with respect to empty codes
@@ -2638,7 +2636,7 @@ BOOL CNewMuArgCtrl::WriteVariablesFromMicroRecord(UCHAR *str, FILE *fdout, long 
 
 }
 
-STDMETHODIMP CNewMuArgCtrl::SetInFileInfo(VARIANT_BOOL IsFixedFormat, BSTR Seperator, VARIANT_BOOL IgnoreFirstLine)
+STDMETHODIMP CMuArgCtrl::SetInFileInfo(VARIANT_BOOL IsFixedFormat, BSTR Seperator, VARIANT_BOOL IgnoreFirstLine)
 {
 	if (IsFixedFormat) {
 		m_InFileIsFixedFormat = true;
@@ -2659,14 +2657,14 @@ STDMETHODIMP CNewMuArgCtrl::SetInFileInfo(VARIANT_BOOL IsFixedFormat, BSTR Seper
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::NumberofRecords(long *pVal)
+STDMETHODIMP CMuArgCtrl::NumberofRecords(long *pVal)
 {
 	*pVal = m_NumberofRecs;
 
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::NumberOfHouseholds(long *pVal)
+STDMETHODIMP CMuArgCtrl::NumberOfHouseholds(long *pVal)
 {
 	*pVal = m_lNumberOfHH;
 
@@ -2674,7 +2672,7 @@ STDMETHODIMP CNewMuArgCtrl::NumberOfHouseholds(long *pVal)
 }
 
 
-STDMETHODIMP CNewMuArgCtrl::SetOutFileInfo(VARIANT_BOOL IsFixedFormat, BSTR Seperator, BSTR FirstLine, VARIANT_BOOL StringsInQuotes)
+STDMETHODIMP CMuArgCtrl::SetOutFileInfo(VARIANT_BOOL IsFixedFormat, BSTR Seperator, BSTR FirstLine, VARIANT_BOOL StringsInQuotes)
 {
 	if (IsFixedFormat) {
 		m_OutFileIsFixedFormat = true;
@@ -2695,7 +2693,7 @@ STDMETHODIMP CNewMuArgCtrl::SetOutFileInfo(VARIANT_BOOL IsFixedFormat, BSTR Sepe
 }
 
 
-STDMETHODIMP CNewMuArgCtrl::SetNumberOfChangeFiles(long nFiles, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::SetNumberOfChangeFiles(long nFiles, VARIANT_BOOL *pVal)
 {
 	if (nFiles < 0 ) {
 		*pVal = VARIANT_FALSE;
@@ -2709,7 +2707,7 @@ STDMETHODIMP CNewMuArgCtrl::SetNumberOfChangeFiles(long nFiles, VARIANT_BOOL *pV
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::SetBirThreshold(long TabIndex, double Threshold, long *nUnsafe, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::SetBirThreshold(long TabIndex, double Threshold, long *nUnsafe, VARIANT_BOOL *pVal)
 {
 	double Ksi;
 	int i = TabIndex - 1;
@@ -2743,7 +2741,7 @@ STDMETHODIMP CNewMuArgCtrl::SetBirThreshold(long TabIndex, double Threshold, lon
 
 }
 
-STDMETHODIMP CNewMuArgCtrl::SetCodingTop(long VarIndex, double TopLevel, BSTR TopString, VARIANT_BOOL TopUndo, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::SetCodingTop(long VarIndex, double TopLevel, BSTR TopString, VARIANT_BOOL TopUndo, VARIANT_BOOL *pVal)
 {
 	int v = VarIndex - 1;
 
@@ -2762,7 +2760,7 @@ STDMETHODIMP CNewMuArgCtrl::SetCodingTop(long VarIndex, double TopLevel, BSTR To
 
 }
 
-STDMETHODIMP CNewMuArgCtrl::SetCodingBottom(long VarIndex, double BottomLevel, BSTR BottomString, VARIANT_BOOL BottomUndo, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::SetCodingBottom(long VarIndex, double BottomLevel, BSTR BottomString, VARIANT_BOOL BottomUndo, VARIANT_BOOL *pVal)
 {
 	int v = VarIndex - 1;
 
@@ -2781,7 +2779,7 @@ STDMETHODIMP CNewMuArgCtrl::SetCodingBottom(long VarIndex, double BottomLevel, B
 
 }
 
-STDMETHODIMP CNewMuArgCtrl::GetMinMaxValue(long VarIndex, double *Min, double *Max, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::GetMinMaxValue(long VarIndex, double *Min, double *Max, VARIANT_BOOL *pVal)
 {
 	int v = VarIndex - 1;
 
@@ -2797,7 +2795,7 @@ STDMETHODIMP CNewMuArgCtrl::GetMinMaxValue(long VarIndex, double *Min, double *M
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::ClosePramVar(long VarIndex, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::ClosePramVar(long VarIndex, VARIANT_BOOL *pVal)
 {
 	int v = VarIndex - 1, i, n;
 
@@ -2819,7 +2817,7 @@ STDMETHODIMP CNewMuArgCtrl::ClosePramVar(long VarIndex, VARIANT_BOOL *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::SetPramVar(long VarIndex, long BandWidth, VARIANT_BOOL Undo, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::SetPramVar(long VarIndex, long BandWidth, VARIANT_BOOL Undo, VARIANT_BOOL *pVal)
 {
 	bool bUndo;
 	if (Undo)
@@ -2871,7 +2869,7 @@ STDMETHODIMP CNewMuArgCtrl::SetPramVar(long VarIndex, long BandWidth, VARIANT_BO
 
 }
 
-STDMETHODIMP CNewMuArgCtrl::SetPramValue(long CodeIndex, long Value, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::SetPramValue(long CodeIndex, long Value, VARIANT_BOOL *pVal)
 {
 	int c = CodeIndex - 1, n, v = m_PramVarIndex;
 
@@ -2896,7 +2894,7 @@ STDMETHODIMP CNewMuArgCtrl::SetPramValue(long CodeIndex, long Value, VARIANT_BOO
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::GetTableUC(long nDim, long Index, VARIANT_BOOL *BaseTable, long *nUC, long *VarList, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::GetTableUC(long nDim, long Index, VARIANT_BOOL *BaseTable, long *nUC, long *VarList, VARIANT_BOOL *pVal)
 {
 	int i, d = 0;
 	CUCList uc;
@@ -2933,7 +2931,7 @@ STDMETHODIMP CNewMuArgCtrl::GetTableUC(long nDim, long Index, VARIANT_BOOL *Base
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::GetVarCode(long VarIndex, long CodeIndex,
+STDMETHODIMP CMuArgCtrl::GetVarCode(long VarIndex, long CodeIndex,
 													BSTR *Code, long *PramPerc,
 													VARIANT_BOOL *pVal)
 {
@@ -2966,7 +2964,7 @@ STDMETHODIMP CNewMuArgCtrl::GetVarCode(long VarIndex, long CodeIndex,
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::GetVarProperties(long VarIndex, long *StartPos, long *nPos, long *nSuppress, double *Entropy, long *BandWidth, BSTR *Missing1, BSTR *Missing2, long *NofCodes, long *NofMissing, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::GetVarProperties(long VarIndex, long *StartPos, long *nPos, long *nSuppress, double *Entropy, long *BandWidth, BSTR *Missing1, BSTR *Missing2, long *NofCodes, long *NofMissing, VARIANT_BOOL *pVal)
 {
 	int i, v = VarIndex - 1;
 
@@ -3021,7 +3019,7 @@ STDMETHODIMP CNewMuArgCtrl::GetVarProperties(long VarIndex, long *StartPos, long
 }
 
 
-STDMETHODIMP CNewMuArgCtrl::SetChangeFile(long FileIndex, BSTR FileName, long nVar, long *VarIndex, BSTR FileSeperator, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::SetChangeFile(long FileIndex, BSTR FileName, long nVar, long *VarIndex, BSTR FileSeperator, VARIANT_BOOL *pVal)
 {
 	long lFileIndex;
 	lFileIndex = FileIndex -1;
@@ -3062,7 +3060,7 @@ STDMETHODIMP CNewMuArgCtrl::SetChangeFile(long FileIndex, BSTR FileName, long nV
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::SetRound(long VarIndex, double RoundBase, long nDec, VARIANT_BOOL Undo, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::SetRound(long VarIndex, double RoundBase, long nDec, VARIANT_BOOL Undo, VARIANT_BOOL *pVal)
 {
 	int v = VarIndex - 1;
 	if (v < 0 || v >= m_nvar ||
@@ -3080,7 +3078,7 @@ STDMETHODIMP CNewMuArgCtrl::SetRound(long VarIndex, double RoundBase, long nDec,
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::SetSuppressPrior(long VarIndex, long Priority, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::SetSuppressPrior(long VarIndex, long Priority, VARIANT_BOOL *pVal)
 {
 	int v = VarIndex - 1;
 	if (v < 0 || v >= m_nvar || !m_var[v].IsCategorical) {
@@ -3093,7 +3091,7 @@ STDMETHODIMP CNewMuArgCtrl::SetSuppressPrior(long VarIndex, long Priority, VARIA
 	return S_OK;
 }
 
-STDMETHODIMP CNewMuArgCtrl::SetWeightNoise(long VarIndex, double WeightNoise, VARIANT_BOOL Undo, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::SetWeightNoise(long VarIndex, double WeightNoise, VARIANT_BOOL Undo, VARIANT_BOOL *pVal)
 {
 	int v = VarIndex - 1;
 
@@ -3114,7 +3112,7 @@ STDMETHODIMP CNewMuArgCtrl::SetWeightNoise(long VarIndex, double WeightNoise, VA
 
 }
 
-STDMETHODIMP CNewMuArgCtrl::MakeFileSafeClearOptions()
+STDMETHODIMP CMuArgCtrl::MakeFileSafeClearOptions()
 {
 	int i;
 
@@ -3133,7 +3131,7 @@ STDMETHODIMP CNewMuArgCtrl::MakeFileSafeClearOptions()
 }
 
 
-STDMETHODIMP CNewMuArgCtrl::ComputeBIRRateThreshold(long TabIndex, double MaxRisk,
+STDMETHODIMP CMuArgCtrl::ComputeBIRRateThreshold(long TabIndex, double MaxRisk,
                                                     double *ReIdentRate, VARIANT_BOOL *pVal)
 {
 //	AFX_MANAGE_STATE(AfxGetStaticModuleState())
@@ -3163,7 +3161,7 @@ STDMETHODIMP CNewMuArgCtrl::ComputeBIRRateThreshold(long TabIndex, double MaxRis
 }
 
 
-STDMETHODIMP CNewMuArgCtrl::GetBIRHistogramData(long TabIndex, long nClasses,
+STDMETHODIMP CMuArgCtrl::GetBIRHistogramData(long TabIndex, long nClasses,
 																double *ClassLeftValue,
 																double *Ksi, long *Frequency,
 																VARIANT_BOOL *pVal)
@@ -3231,7 +3229,7 @@ STDMETHODIMP CNewMuArgCtrl::GetBIRHistogramData(long TabIndex, long nClasses,
 
 }
 
-BOOL CNewMuArgCtrl::AddMissingTable(CTable & t, int niv, int *DimNr,
+BOOL CMuArgCtrl::AddMissingTable(CTable & t, int niv, int *DimNr,
 											BOOL HasMissing, int type,
 											double *Ksi, double MaxRisk,
 											long * Frequency)
@@ -3306,7 +3304,7 @@ BOOL CNewMuArgCtrl::AddMissingTable(CTable & t, int niv, int *DimNr,
 // DimNr:  array of indices for every dimension
 // HasMissing: true if at least one is an index of a Missing Value
 // Horrendous algorithm stay off it
-int CNewMuArgCtrl::AddMissing(const CTable& tab, int *DimNr, long& freq,
+int CMuArgCtrl::AddMissing(const CTable& tab, int *DimNr, long& freq,
 										double& weight, BOOL HasMissing)
 {
 	int i, j, k, n, nDim;
@@ -3397,7 +3395,7 @@ int CNewMuArgCtrl::AddMissing(const CTable& tab, int *DimNr, long& freq,
 
 
 // Missing1 and, if present, Missing2
-void CNewMuArgCtrl::AddMissingCells(CTable& t, int *dimnr, int *nMissing, long& freq, double& weight)
+void CMuArgCtrl::AddMissingCells(CTable& t, int *dimnr, int *nMissing, long& freq, double& weight)
 {
 	long CellNr;
 
@@ -3417,7 +3415,7 @@ void CNewMuArgCtrl::AddMissingCells(CTable& t, int *dimnr, int *nMissing, long& 
 }
 
 
-STDMETHODIMP CNewMuArgCtrl::MakeFileSafe(BSTR FileName, VARIANT_BOOL WithPrior,
+STDMETHODIMP CMuArgCtrl::MakeFileSafe(BSTR FileName, VARIANT_BOOL WithPrior,
 													  VARIANT_BOOL WithEntropy,
 													  long HHIdentOption,
 													  VARIANT_BOOL RandomizeOutput,
@@ -3690,12 +3688,12 @@ error:
 }
 
 // compute Biggest Common Divisor
-int CNewMuArgCtrl::GGD(int a, int b)
+int CMuArgCtrl::GGD(int a, int b)
 { if (b == 0) return a;
   else        return (GGD(b, a % b) );
 }
 
-bool CNewMuArgCtrl::MakeRecordDescription(long HHIdentOption)
+bool CMuArgCtrl::MakeRecordDescription(long HHIdentOption)
 {
 	int v, pos, i;
 	CStringArray rec;
@@ -3811,7 +3809,7 @@ bool CNewMuArgCtrl::MakeRecordDescription(long HHIdentOption)
 	return true;
 }
 
-bool CNewMuArgCtrl::MakeFreeRecordDescription(long HHIdentOption)
+bool CMuArgCtrl::MakeFreeRecordDescription(long HHIdentOption)
 {
 	long v;
 	long np;
@@ -3837,7 +3835,7 @@ bool CNewMuArgCtrl::MakeFreeRecordDescription(long HHIdentOption)
 }
 
 
-void CNewMuArgCtrl::QuickSortStringArray(CStringArray &s, int first, int last)
+void CMuArgCtrl::QuickSortStringArray(CStringArray &s, int first, int last)
 { int i, j;
   CString mid, temp;
 
@@ -3877,7 +3875,7 @@ void CNewMuArgCtrl::QuickSortStringArray(CStringArray &s, int first, int last)
   } while (first < last);
 }
 
-BOOL CNewMuArgCtrl::DoEntropy(long VarNr, double& Entropy)
+BOOL CMuArgCtrl::DoEntropy(long VarNr, double& Entropy)
 {
 	int v = VarNr, i, j, n, N = 0, freq;
 	CTable *t;
@@ -3928,7 +3926,7 @@ BOOL CNewMuArgCtrl::DoEntropy(long VarNr, double& Entropy)
 // fase = 0 first time
 // fase = 1 second time (only for HH's)
 
-BOOL CNewMuArgCtrl::MakeRecordSafe(UCHAR *record, int fase, int recnr, int nRecHH, long HHNum)
+BOOL CMuArgCtrl::MakeRecordSafe(UCHAR *record, int fase, int recnr, int nRecHH, long HHNum)
 {
 	int i, n;
 	double score = 0, freqscore = 0, minscore = 0;
@@ -4066,7 +4064,7 @@ BOOL CNewMuArgCtrl::MakeRecordSafe(UCHAR *record, int fase, int recnr, int nRecH
 }
 
 // compute (recode)indices out of alfanumerical code for every categorical variable
- BOOL CNewMuArgCtrl::ComputeVarIndices(UCHAR *record)
+ BOOL CMuArgCtrl::ComputeVarIndices(UCHAR *record)
 {
 	int v;
 
@@ -4087,7 +4085,7 @@ BOOL CNewMuArgCtrl::MakeRecordSafe(UCHAR *record, int fase, int recnr, int nRecH
 
 // sets unsafe on true or false in m_UCList
 
-int CNewMuArgCtrl::ComputeRecordUC(long HHNum)
+int CMuArgCtrl::ComputeRecordUC(long HHNum)
 {
 	int i, j, n = 0, nDim, CellNr, HHSize;
 	CTable t;   //Watch OUT
@@ -4203,7 +4201,7 @@ int CNewMuArgCtrl::ComputeRecordUC(long HHNum)
 
 // sets flag to make variable missing
 // sets all tables with this variable at safe
-void CNewMuArgCtrl::SetVarMissing(int iVar)
+void CMuArgCtrl::SetVarMissing(int iVar)
 {
 	int i;
 
@@ -4233,7 +4231,7 @@ void CNewMuArgCtrl::SetVarMissing(int iVar)
 }
 
 // sets missings
-double CNewMuArgCtrl::SetFreqMissings(CUIntArray& FreqMissing, int nRecHH)
+double CMuArgCtrl::SetFreqMissings(CUIntArray& FreqMissing, int nRecHH)
 {
 	int i, d, nUnsafeTab, ni = -1;
 	double score = 0.0;
@@ -4305,7 +4303,7 @@ double CNewMuArgCtrl::SetFreqMissings(CUIntArray& FreqMissing, int nRecHH)
 		return score;
 }
 // sets missings, second method
-double CNewMuArgCtrl::SetMinMissings(CUIntArray& MinMissing, int nRecHH)
+double CMuArgCtrl::SetMinMissings(CUIntArray& MinMissing, int nRecHH)
 {
 	int i, j, nUnsafeTab, ni, ndim, iVar;
 	double score = 0.0;
@@ -4358,14 +4356,14 @@ double CNewMuArgCtrl::SetMinMissings(CUIntArray& MinMissing, int nRecHH)
 }
 
 
-int CNewMuArgCtrl::GetHHSizeFactor(int VarIndex, int nRecHH)
+int CMuArgCtrl::GetHHSizeFactor(int VarIndex, int nRecHH)
 {
   if (m_HHIdentOption == HHIDENT_NO) return 1;
 	return m_var[VarIndex].IsHHVar ? nRecHH : 1;
 }
 
 
-BOOL CNewMuArgCtrl::WriteRecord(FILE *fd_out, UCHAR *record, long HHIdentOption,
+BOOL CMuArgCtrl::WriteRecord(FILE *fd_out, UCHAR *record, long HHIdentOption,
 
 									  long recnr, bool WithBHR, long HHNum, bool PrintBIR, UCHAR *origrecord)
 {
@@ -4785,7 +4783,7 @@ BOOL CNewMuArgCtrl::WriteRecord(FILE *fd_out, UCHAR *record, long HHIdentOption,
 }
 
 
-bool CNewMuArgCtrl::IsInOutputFile(long VarIndex, long *FileNum,
+bool CMuArgCtrl::IsInOutputFile(long VarIndex, long *FileNum,
 								long *ArrIndex)
 {
 	long i,j;
@@ -4810,14 +4808,14 @@ bool CNewMuArgCtrl::IsInOutputFile(long VarIndex, long *FileNum,
 
 
 // value 0 ... 2^31 - 1
-int CNewMuArgCtrl::GetRandomInteger()
+int CMuArgCtrl::GetRandomInteger()
 { // rand() returns value 0 - 32767
   return ((rand() % 16384) << 16) + rand();
   // returns 0 - 2147483647
 }
 
 
-int CNewMuArgCtrl::ComputeRecHH(FILE *fd, int bpos, int npos)
+int CMuArgCtrl::ComputeRecHH(FILE *fd, int bpos, int npos)
 {
 	UCHAR str[MAXRECORDLENGTH];
 	char FirstHH[MAXCODEWIDTH];      // first household ident
@@ -4844,7 +4842,7 @@ int CNewMuArgCtrl::ComputeRecHH(FILE *fd, int bpos, int npos)
 
 // Look at this part.
 // I think this is where the household is made safe.
-BOOL CNewMuArgCtrl::DoCompleteHH(FILE *fd, FILE *fd_out, long StartPos, int n_rec,
+BOOL CMuArgCtrl::DoCompleteHH(FILE *fd, FILE *fd_out, long StartPos, int n_rec,
 											int *InvolvedVar, int recnr,
 											long HHIdentOption, long HHNum, bool PrintBIR)
 {
@@ -4909,7 +4907,7 @@ BOOL CNewMuArgCtrl::DoCompleteHH(FILE *fd, FILE *fd_out, long StartPos, int n_re
 }
 
 
-bool CNewMuArgCtrl::NumberOfHH(UCHAR *str, long &HHNumbers)
+bool CMuArgCtrl::NumberOfHH(UCHAR *str, long &HHNumbers)
 {
 	int i, bp, ap;
 	char code[MAXCODEWIDTH];
@@ -4956,7 +4954,7 @@ bool CNewMuArgCtrl::NumberOfHH(UCHAR *str, long &HHNumbers)
 }
 
 
-bool CNewMuArgCtrl::IsNewHH(UCHAR *str)
+bool CMuArgCtrl::IsNewHH(UCHAR *str)
 {
 	int i, bp, ap;
 	char code[MAXCODEWIDTH];
@@ -5002,7 +5000,7 @@ bool CNewMuArgCtrl::IsNewHH(UCHAR *str)
 	}
 }
 
-STDMETHODIMP CNewMuArgCtrl::CalculateBaseHouseholdRisk(long *ErrorCode, VARIANT_BOOL *pVal)
+STDMETHODIMP CMuArgCtrl::CalculateBaseHouseholdRisk(long *ErrorCode, VARIANT_BOOL *pVal)
 {
 	FILE *fd_in;
 	long i,j;
@@ -5107,7 +5105,7 @@ STDMETHODIMP CNewMuArgCtrl::CalculateBaseHouseholdRisk(long *ErrorCode, VARIANT_
 	return S_OK;
 }
 
-bool CNewMuArgCtrl::FindBIRForRec( UCHAR *record, double *BIRarray)
+bool CMuArgCtrl::FindBIRForRec( UCHAR *record, double *BIRarray)
 {
 	long i,j, freq, bircounter = 0;;
 	CTable t;
@@ -5158,7 +5156,7 @@ bool CNewMuArgCtrl::FindBIRForRec( UCHAR *record, double *BIRarray)
 }
 
 
-void CNewMuArgCtrl::ComputeTableBIR(CTable &t, int& BIRFreq, double& BIRWeight, double& BIR)
+void CMuArgCtrl::ComputeTableBIR(CTable &t, int& BIRFreq, double& BIRWeight, double& BIR)
 { int j, DimNr[MAXDIM];
 	BOOL HasMissing = false;
 
@@ -5193,7 +5191,7 @@ void CNewMuArgCtrl::ComputeTableBIR(CTable &t, int& BIRFreq, double& BIRWeight, 
 
 
 
-STDMETHODIMP CNewMuArgCtrl::GetBHRHistogramData(long TableIndex, long nClasses,
+STDMETHODIMP CMuArgCtrl::GetBHRHistogramData(long TableIndex, long nClasses,
 																double *ClassLeftValue,
 																long *HHFrequency, long *RecFrequency,
 																VARIANT_BOOL *pVal)
@@ -5294,7 +5292,7 @@ STDMETHODIMP CNewMuArgCtrl::GetBHRHistogramData(long TableIndex, long nClasses,
 }
 
 
-void CNewMuArgCtrl::QuickSortDoubleArray(double * d, int first, int last)
+void CMuArgCtrl::QuickSortDoubleArray(double * d, int first, int last)
 { int i, j;
   double mid, temp;
   ASSERT(first >= 0 && last >= first);
@@ -5335,7 +5333,7 @@ void CNewMuArgCtrl::QuickSortDoubleArray(double * d, int first, int last)
 }
 
 
-STDMETHODIMP CNewMuArgCtrl::SetBHRThreshold(long TableIndex, double BHRThreshold,
+STDMETHODIMP CMuArgCtrl::SetBHRThreshold(long TableIndex, double BHRThreshold,
 														  long *nUnsafeHH, long *nUnsafeRec, VARIANT_BOOL *pVal)
 {
 	long index = TableIndex -1;
@@ -5387,7 +5385,7 @@ STDMETHODIMP CNewMuArgCtrl::SetBHRThreshold(long TableIndex, double BHRThreshold
 
 }
 
-STDMETHODIMP CNewMuArgCtrl::CalculateBIRFreq(long TableIndex,
+STDMETHODIMP CMuArgCtrl::CalculateBIRFreq(long TableIndex,
 											long nUnsafe, double *BIRResult,
 											long *ErrorCode,
 											VARIANT_BOOL *pVal)
@@ -5513,7 +5511,7 @@ STDMETHODIMP CNewMuArgCtrl::CalculateBIRFreq(long TableIndex,
 }
 
 
-bool CNewMuArgCtrl::FillBIRArray(CTable &tab, double *BIRarray, UCHAR *record)
+bool CMuArgCtrl::FillBIRArray(CTable &tab, double *BIRarray, UCHAR *record)
 {
 	if (!ComputeVarIndices(record) ) return false;
 	long CellNr=0;
@@ -5547,7 +5545,7 @@ bool CNewMuArgCtrl::FillBIRArray(CTable &tab, double *BIRarray, UCHAR *record)
 
 
 
-void CNewMuArgCtrl::QuickSortBIRFreqArray(double * BIR, long *Freq, int first, int last)
+void CMuArgCtrl::QuickSortBIRFreqArray(double * BIR, long *Freq, int first, int last)
 {
 	int i, j;
 	double mid, BIRtemp;
@@ -5594,7 +5592,7 @@ void CNewMuArgCtrl::QuickSortBIRFreqArray(double * BIR, long *Freq, int first, i
 
 }
 /*
-double CNewMuArgCtrl::FindBIRforNumIterations(double BIR0, long NumIter,
+double CMuArgCtrl::FindBIRforNumIterations(double BIR0, long NumIter,
 																	  long nUnsafe, double *BIRArray,
 																	  long *FreqArray, CTable &t)
 {
@@ -5650,7 +5648,7 @@ double CNewMuArgCtrl::FindBIRforNumIterations(double BIR0, long NumIter,
 
 
 
-STDMETHODIMP CNewMuArgCtrl::CalculateBHRFreq(long TableIndex, VARIANT_BOOL UseNumOfHH,
+STDMETHODIMP CMuArgCtrl::CalculateBHRFreq(long TableIndex, VARIANT_BOOL UseNumOfHH,
 															long nUnsafeHH, long nUnsafeRec,
 															double *ResBHR, long *ErrCode,
 															VARIANT_BOOL *pVal)
