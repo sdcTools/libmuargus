@@ -13,7 +13,7 @@
 
 #include <math.h>
 #include <float.h>
-#include "MuArgCP.h"
+//#include "MuArgCP.h"
 #include "Household.h"
 /*CString extern CurrentHHName;
 CString extern LastHHName;
@@ -153,8 +153,8 @@ private:
 	void AddSpacesBefore(std::string& str, int len);
 	void AddSpacesBefore(char *str, int len);
 
-	bool ComputeTableIndex(unsigned char *str, CVariable *var, long Index);
-	void FillTables(unsigned char *str);
+	bool ComputeTableIndex(char *str, CVariable *var, long Index);
+	void FillTables(char *str);
 	void AddTableCell(CTable& t, double Weight);
 	int  ComputeSubTableList();
 	void DoSubTableList(int iTab, int niv, int from, int *vars, int CVar);
@@ -180,35 +180,35 @@ private:
         bool ParseRecodeStringLine(long VarIndex, std::string str, long *ErrorType, long *ErrorPos, int Phase);
 	int  ReadWord(std::string str, char* CodeFrom, char *CodeTo, char EndCode, int& fromto, int& pos);
 
-	bool WriteVariablesFromMicroRecord(unsigned char *str, FILE *fdout, long *VarIndexes,long nVar, std::string seperator);
+	bool WriteVariablesFromMicroRecord(char *str, FILE *fdout, long *VarIndexes,long nVar, std::string seperator);
 
-	bool AddMissingTable(CTable & t, int niv, int *DimNr, BOOL HasMissing, int type, double *Ksi, double MaxRisk, long * Frequency=0);
-	int	AddMissing(const CTable& tab, int *DimNr, long& freq, double& weight, bool HasMissing);
+	bool AddMissingTable(CTable & t, int niv, int *DimNr, bool HasMissing, int type, double *Ksi, double MaxRisk, long * Frequency=0);
+	int  AddMissing(const CTable& tab, int *DimNr, long& freq, double& weight, bool HasMissing);
 	void AddMissingCells(CTable& t, int *dimnr, int *nMissing, long& freq, double& weight);
 
 	bool MakeRecordDescription(long HHIdentOption);
 	bool MakeFreeRecordDescription(long HHIdentOption);
 	void QuickSortStringArray(std::vector<std::string> &s, int first, int last);
 	bool DoEntropy(long VarNr, double& Entropy);
-	bool MakeRecordSafe(unsigned char *record, int fase, int recnr, int nRecHH, long HHNum);
-	bool ComputeVarIndices(unsigned char *record);
+	bool MakeRecordSafe(char *record, int fase, int recnr, int nRecHH, long HHNum);
+	bool ComputeVarIndices(char *record);
 	int  ComputeRecordUC(long HHNum);
 	void SetVarMissing(int iVar);
 	double SetFreqMissings(std::vector<unsigned int>& FreqMissing, int nRecHH);
 	int GetHHSizeFactor(int VarIndex, int nRecHH);
 	double SetMinMissings(std::vector<unsigned int>& MinMissing, int nRecHH);
-	bool WriteRecord(FILE *fd_out, unsigned char *record, long HHIdentOption, long recnr, bool WithBHR, long HHNum, bool PrintBIR, unsigned char *origrecord);
+	bool WriteRecord(FILE *fd_out, char *record, long HHIdentOption, long recnr, bool WithBHR, long HHNum, bool PrintBIR, char *origrecord);
 	bool IsInOutputFile(long VarIndex, long *FileNum, long *ArrIndex);
 	int GetRandomInteger();
 	int ComputeRecHH(FILE *fd, int bpos, int npos);
 	bool DoCompleteHH(FILE *fd, FILE *fd_out, long StartPos, int n_rec, int *InvolvedVar, int recnr, long HHIdentOption, long HHNum, bool PrintBIR);
 	void ComputeTableBIR(CTable &t, int& BIRFreq, double& BIRWeight, double& BIR);
 
-	bool NumberOfHH(unsigned char *str, long &HHNumbers);
-	bool IsNewHH(unsigned char *str);
-	bool FindBIRForRec( unsigned char *str, double *BIRarray);
+	bool NumberOfHH(char *str, long &HHNumbers);
+	bool IsNewHH(char *str);
+	bool FindBIRForRec(char *str, double *BIRarray);
 	void QuickSortDoubleArray(double *d, int first, int last);
-	bool FillBIRArray(CTable &tab, double *BIRarray, unsigned char *record);
+	bool FillBIRArray(CTable &tab, double *BIRarray, char *record);
 	void QuickSortBIRFreqArray(double * BIR, long *Freq, int first, int last);
 	double FindBIRforNumIterations(double BIR0, long NumIter, long nUnsafe, double *BIRArray, long *FreqArray, CTable &t);
 
@@ -252,7 +252,7 @@ public:
 	bool UndoRecode(/*[in]*/ long VarIndex);
 	bool DoRecode(/*[in]*/ long VarIndex,/*[in]*/ std::string RecodeString,/*[in]*/ std::string eMissing1,/*[in]*/ std::string eMissing2,/*[in,out]*/ long *ErrorType,/*[in,out]*/ long *ErrorLine, /*[in,out]*/ long *ErrorPos, /*[in,out]*/ std::string *WarningString);
 	bool UnsafeVariableClose(/*[in]*/ long VarIndex);
-	bool UnsafeVariableCodes(/*[in]*/ long VarIndex,/*[in]*/  long CodeIndex,/*[in,out]*/  long *IsMissing, /*[in,out]*/  long *Freq,/*[in,out]*/  std::string *Code, /*[in,out]*/ long *Count, /*[in,out]*/ long *UCArray);
+	bool UnsafeVariableCodes(/*[in]*/ long VarIndex,/*[in]*/  long CodeIndex,/*[in,out]*/  long *IsMissing, /*[in,out]*/  long *Freq,/*[in,out]*/  const char **Code, /*[in,out]*/ long *Count, /*[in,out]*/ long *UCArray);
 	bool UnsafeVariablePrepare(/*[in]*/ long VarIndex, /*[in]*/  long *nCode);
 	bool UnsafeVariable(/*[in]*/ long VarIndex, /*[in,out]*/ long * Count, /*[in,out]*/ long * UCArray);
 	long GetMaxnUC();

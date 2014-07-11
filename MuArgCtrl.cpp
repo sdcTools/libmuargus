@@ -5,14 +5,16 @@
 #include <vector>
 #include <string.h>
 #include <assert.h>
+#include <algorithm>
+#include <sstream>
 
 
-std::string trimright(const string &t)
+std::string trimright(const std::string &t)
 {
-    string str = t;
+    std::string str = t;
     size_t found;
     found = str.find_last_not_of(" \n\r\t");
-    if (found != string::npos)
+    if (found != str.npos)
     	str.erase(found+1);
     else
     	str.clear();            // str is all whitespace
@@ -20,18 +22,18 @@ std::string trimright(const string &t)
     return str;
 }
 
-std::string trimleft(const string &t)
+std::string trimleft(const std::string &t)
 {
-    string str = t;
+    std::string str = t;
     size_t found;
     found = str.find_first_not_of(" \n\r\t");
-    if (found != string::npos)
+    if (found != str.npos)
     	str.erase(0,found);
     else
     	str.clear();            // str is all whitespace
 
     return str;
-
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CMuArgCtrl
@@ -45,96 +47,94 @@ void CMuArgCtrl::FireUpdateProgress(short Perc)
 bool CMuArgCtrl::SetNumberVar(long nvar)
 {
 //	CleanUp();  // in case of a second call very usefull
+    m_nvar = nvar;
+    m_var = new CVariable[m_nvar];
+    if (m_var == 0) {
+        return false;
+    }
+    m_ntab = 0;
+    m_tab = 0;
 
-  m_nvar = nvar;
-  m_var = new CVariable[m_nvar];
-  if (m_var == 0) {
-    return false;
-  }
-  m_ntab = 0;
-  m_tab = 0;
-
-  if (m_nvar <= 0)  {
-    return false;
-  }
-  else  {
-    return true;
-  }
+    if (m_nvar <= 0)  {
+        return false;
+    }
+    else  {
+        return true;
+    }
 }
 
 bool CMuArgCtrl::SetVariable(long Index, long bPos, long nPos, long nDec, std::string Missing1, std::string Missing2,
 				bool IsHHIdent, bool IsHHVar, bool IsCategorical, bool IsNumeric, bool IsWeight, long RelatedVar)
 {
-	long i = Index - 1;
-	std::string sMissing1 = Missing1;
-	std::string sMissing2 = Missing2;
-	bool bIsHHIdent,bIsHHVar,bIsCategorical,bIsNumeric,bIsWeight;
+    long i = Index - 1;
+    std::string sMissing1 = Missing1;
+    std::string sMissing2 = Missing2;
+    bool bIsHHIdent,bIsHHVar,bIsCategorical,bIsNumeric,bIsWeight;
 
-	if (IsHHIdent) {
-		bIsHHIdent = true;
-	}
-	else {
-		bIsHHIdent = false;
-	}
+    if (IsHHIdent) {
+	bIsHHIdent = true;
+    }
+    else {
+	bIsHHIdent = false;
+    }
 
-	if (IsHHVar) {
-		bIsHHVar = true;
-	}
-	else {
-		bIsHHVar = false;
-	}
+    if (IsHHVar) {
+	bIsHHVar = true;
+    }
+    else {
+	bIsHHVar = false;
+    }
 
-	if (IsCategorical) {
-		bIsCategorical = true;
-	}
-	else {
-		bIsCategorical = false;
-	}
-	if (IsNumeric) {
-		bIsNumeric = true;
-	}
-	else {
-		bIsNumeric = false;
-	}
+    if (IsCategorical) {
+	bIsCategorical = true;
+    }
+    else {
+	bIsCategorical = false;
+    }
+    if (IsNumeric) {
+	bIsNumeric = true;
+    }
+    else {
+	bIsNumeric = false;
+    }
 
-	if (IsWeight) {
-		bIsWeight = true;
-	}
-	else {
-		bIsWeight = false;
-	}
+    if (IsWeight) {
+	bIsWeight = true;
+    }
+    else {
+	bIsWeight = false;
+    }
 
 
-  // Not the right moment, first call SetNumberVar
-	if (m_nvar == 0) {
-		return false;
-	}
+    // Not the right moment, first call SetNumberVar
+    if (m_nvar == 0) {
+        return false;
+    }
 
-	if (Index < 1 || Index > m_nvar || bPos < 1 ||
-		nDec < 0 || nPos < 1 || nPos >= MAXCODEWIDTH) {
-		return false;
-	}
-	m_var[i].SetPosition(bPos,nPos,nDec);
+    if (Index < 1 || Index > m_nvar || bPos < 1 || nDec < 0 || nPos < 1 || nPos >= MAXCODEWIDTH) {
+        return false;
+    }
+    m_var[i].SetPosition(bPos,nPos,nDec);
 
-	if (IsCategorical || (IsNumeric && !IsWeight) ) {
-		 // missings both empty?
-		if (Missing1[0] == 0 && Missing2[0] == 0) {
-			return false;
-		}
-		m_var[i].SetMissingString(sMissing1,sMissing2);
+    if (IsCategorical || (IsNumeric && !IsWeight) ) {
+        // missings both empty?
+        if (Missing1[0] == 0 && Missing2[0] == 0) {
+            return false;
 	}
+	m_var[i].SetMissingString(sMissing1,sMissing2);
+    }
 
-	m_var[i].SetType(bIsCategorical,bIsNumeric,bIsWeight,bIsHHIdent,bIsHHVar);
-	if (IsHHIdent) {
-		m_HHIdentVar = i;
-		m_bHasHH = true;
-	}
-	if (IsHHVar) {
-		m_HHVars.push_back(i);
-	}
-        m_var[i].RelatedTo = RelatedVar - 1;
+    m_var[i].SetType(bIsCategorical,bIsNumeric,bIsWeight,bIsHHIdent,bIsHHVar);
+    if (IsHHIdent) {
+	m_HHIdentVar = i;
+	m_bHasHH = true;
+    }
+    if (IsHHVar) {
+	m_HHVars.push_back(i);
+    }
+    m_var[i].RelatedTo = RelatedVar - 1;
 
-	return true;
+    return true;
 }
 
 bool CMuArgCtrl::ExploreFile(std::string FileName, long *ErrorCode, long *LineNumber, long *VarIndex)
@@ -347,7 +347,7 @@ bool CMuArgCtrl::ReadVariableFreeFormat(char *Str, long VarIndex, std::string *V
     std::vector<std::string> VarCodes;
     std::string stempstr, stemp, tempvarcode;
     CVariable *var;
-    VarCodes.SetSize(m_nvar);
+    VarCodes.reserve(m_nvar);
     stempstr = Str;
     int inrem;
     long lseppos;
@@ -375,9 +375,11 @@ bool CMuArgCtrl::ReadVariableFreeFormat(char *Str, long VarIndex, std::string *V
         tempvarcode = trimleft(tempvarcode);
 	//tempvarcode.TrimRight();
         tempvarcode = trimright(tempvarcode);
-        std::remove_if ????
-	inrem = tempvarcode.Remove('"');
-	assert ((inrem == 2) || (inrem == 0));
+	//inrem = tempvarcode.Remove('"');
+        inrem = tempvarcode.size();
+        tempvarcode.erase(std::remove(tempvarcode.begin(),tempvarcode.end(),'"'),tempvarcode.end());
+        inrem = inrem - tempvarcode.size(); // Number of removed quotes
+	assert ((inrem == 2) || (inrem == 0));  // should be either 2 or 0
 	var = &(m_var[VarIndex]);
 	AddSpacesBefore(tempvarcode,var->nPos);
 	//Now add leading spaces
@@ -392,31 +394,36 @@ bool CMuArgCtrl::ReadVariableFreeFormat(char *Str, long VarIndex, std::string *V
 
 
 bool CMuArgCtrl::ConvertNumeric(char *code, double &d)
+{ 
+    char *stop;
 
-{ char *stop;
+    d = strtod(code, &stop);
 
-  d = strtod(code, &stop);
-
-  if (*stop != 0) {
-    while (*(stop) == ' ') stop++;
     if (*stop != 0) {
-      return false;
+        while (*(stop) == ' ') stop++;
+        if (*stop != 0) {
+        return false;
+        }
     }
-  }
-
-  return true;
+    return true;
 }
 
-void CMuArgCtrl::AddSpacesBefore(CString& str, int len)
-{ int width = str.GetLength();
+void CMuArgCtrl::AddSpacesBefore(std::string& str, int len)
+{ 
+    int width = str.length();
 
-  if (width >= len) return;  // nothing to do
+    if (width >= len) return;  // nothing to do
 
-  { char tempstr[100];
-    sprintf(tempstr, "%*s", len - width, " ");
-    str.Insert(0, tempstr);
-  }
+    { //char tempstr[100];
+        std::string tempstr;
+        //sprintf(tempstr, "%*s", len - width, " ");
+        tempstr.clear();
+        tempstr.append(len - width,' ');
+        //str.Insert(0, tempstr);
+        str.insert(0,tempstr);
+    }
 }
+
 void CMuArgCtrl::AddSpacesBefore(char *str, int len)
 { int lstr = strlen(str);
 
@@ -429,1511 +436,1401 @@ void CMuArgCtrl::AddSpacesBefore(char *str, int len)
 
 
 
-STDMETHODIMP CMuArgCtrl::SetNumberTab(long nTab, VARIANT_BOOL *pVal)
+bool CMuArgCtrl::SetNumberTab(long nTab)
 {
-  if (m_nvar == 0 || nTab < 1) {
-		*pVal = VARIANT_FALSE;
-	    return S_OK;
-  }
+    if (m_nvar == 0 || nTab < 1) {
+        return false;
+    }
 
-  // ev. free and delete previous tables
-  if (m_ntab != 0) {
-    CleanTables();
-  }
+    // ev. free and delete previous tables
+    if (m_ntab != 0) {
+        CleanTables();
+    }
 
-  m_ntab = nTab;
-  m_tab = new CTable[nTab + nTab];  // second part for recoded tables
-  if (m_tab == 0) {
-    *pVal = VARIANT_FALSE;
-	 return S_OK;
-  }
-
-  *pVal = VARIANT_TRUE;
-	return S_OK;
+    m_ntab = nTab;
+    m_tab = new CTable[nTab + nTab];  // second part for recoded tables
+    if (m_tab == 0) {
+        return false;
+    }
+    return true;
 }
 
-STDMETHODIMP CMuArgCtrl::CleanAll()
+bool CMuArgCtrl::CleanAll()
 {
-	CleanUp();
-
-	return S_OK;
+    CleanUp();
+    return true;
 }
 
 void CMuArgCtrl::CleanUp()
 {
-
-	for (int i = 0; i < m_nUC; i++) {
-		if (m_UCList[i].nDim != m_tab[m_UCList[i].TabNr].nDim) {  // no base table
-			delete[] m_UCList[i].table.Cell;
-			m_UCList[i].table.Cell = 0;
-			m_UCList[i].table.nCell = 0;
-			if (m_UCList[i].table.IsBIR) {
-				if (m_UCList[i].table.BIRCell != 0) {
-					delete[] m_UCList[i].table.BIRCell;
-					m_UCList[i].table.BIRCell = 0;
-				}
-			}
+    for (int i = 0; i < m_nUC; i++) {
+	if (m_UCList[i].nDim != m_tab[m_UCList[i].TabNr].nDim) {  // no base table
+            delete[] m_UCList[i].table.Cell;
+            m_UCList[i].table.Cell = 0;
+            m_UCList[i].table.nCell = 0;
+            if (m_UCList[i].table.IsBIR) {
+                if (m_UCList[i].table.BIRCell != 0) {
+                    delete[] m_UCList[i].table.BIRCell;
+                    m_UCList[i].table.BIRCell = 0;
 		}
+            }
 	}
+    }
+    // variables
+    CleanVars();
+    
+    // tables
+    CleanTables();
+    
+    if (m_HH != 0) {
+        delete[] m_HH;
+    }
+    m_HH = 0;
+    
+    // List Unsafe Combinations
+    if (m_UCList != 0) {
+        delete [] m_UCList;
+	m_UCList = 0;
+    }
 
+    // number unsafe combinations
+    m_nUC = 0;
 
-	// variables
-	CleanVars();
-	// tables
-	CleanTables();
+    // name datafile
+    m_fname[0] = 0;
 
-	if (m_HH != 0) {
-		delete[] m_HH;
-	}
-	m_HH = 0;
-	// List Unsafe Combinations
-	if (m_UCList != 0) {
-		delete [] m_UCList;
-		m_UCList = 0;
-	}
+    if (m_unsafe != 0) {
+        delete [] m_unsafe;
+	m_unsafe = 0;
+    }
 
-	// number unsafe combinations
-	m_nUC = 0;
+    if (m_varlist != 0) {
+	delete [] m_varlist;
+	m_varlist = 0;
+    }
 
-	// name datafile
-	m_fname[0] = 0;
+    m_HHIdentVar = -1;    // make HHIdent na
+    m_HHVars.clear();     // remove all HHVars
+    if (m_nChangeFiles > 0) {
+        delete[] m_ChangeFiles;
+    }
 
-	if (m_unsafe != 0) {
-		delete [] m_unsafe;
-		m_unsafe = 0;
-	}
-
-	if (m_varlist != 0) {
-		delete [] m_varlist;
-		m_varlist = 0;
-	}
-
-	m_HHIdentVar = -1;    // make HHIdent na
-	m_HHVars.RemoveAll(); // remove all HHVars
-	if (m_nChangeFiles > 0) {
-		delete[] m_ChangeFiles;
-	}
-
-	m_lNumBIRs = 0;
-	m_lNumberOfHH = 0;
-
-
+    m_lNumBIRs = 0;
+    m_lNumberOfHH = 0;
 }
-
-
 
 void CMuArgCtrl::CleanVars()
 {
-
-	if (m_nvar > 0) {
+    if (m_nvar > 0) {
     /*for (i = 0; i < m_nvar; i++) {
       if (m_var[i].Recode.DestCode != 0) {
         free(m_var[i].Recode.DestCode);
       }
     }*/
-		delete [] m_var;
-	}
+	delete [] m_var;
+    }
 
-	m_var = 0;
-	m_nvar = 0;
+    m_var = 0;
+    m_nvar = 0;
 }
-
-
 
 void CMuArgCtrl::CleanTables()
 {
-  // also free the used Cells from the tables
-   if (m_ntab != 0) {
-    for (int i = 0; i < m_ntab + m_ntab; i++) {
-      if (m_tab[i].Cell != 0) {
-        delete[] m_tab[i].Cell;
-      }
-      if (m_tab[i].BIRCell != 0) {
-        delete[] m_tab[i].BIRCell;
-      }
+    // also free the used Cells from the tables
+    if (m_ntab != 0) {
+        for (int i = 0; i < m_ntab + m_ntab; i++) {
+            if (m_tab[i].Cell != 0) {
+                delete[] m_tab[i].Cell;
+            }
+            if (m_tab[i].BIRCell != 0) {
+                delete[] m_tab[i].BIRCell;
+            }
+        }
+        delete [] m_tab;
     }
-    delete [] m_tab;
-  }
 
-  m_tab = 0;
-  m_ntab = 0;
+    m_tab = 0;
+    m_ntab = 0;
 }
 
-STDMETHODIMP CMuArgCtrl::SetTable(long TabIndex, long Threshold,
-												 long nDim, long *VarList,
-												 VARIANT_BOOL IsBIR,
-												 long BIRWeightVarIndex,
-												 /*[retval,out]*/ VARIANT_BOOL *pVal)
+bool CMuArgCtrl::SetTable(long TabIndex, long Threshold, long nDim, long *VarList, bool IsBIR, long BIRWeightVarIndex)
 {
-	int i, d;
-  // check TableIndex
-  if (m_nvar == 0 || TabIndex < 1 || TabIndex > m_ntab) {
-    *pVal = VARIANT_FALSE;
-		return S_OK;
-  }
-
-  // check number of dimensions
-  if (nDim < 1 || nDim > MAXDIM) {
-    *pVal = VARIANT_FALSE;
-		return S_OK;
-  }
-
-  // check BIRWeightVarIndex
-  if (IsBIR) {
-    if (BIRWeightVarIndex < 1 || BIRWeightVarIndex > m_nvar || !m_var[BIRWeightVarIndex - 1].IsWeight) {
-      *pVal = VARIANT_FALSE;
-		return S_OK;
+    int i, d;
+    // check TableIndex
+    if (m_nvar == 0 || TabIndex < 1 || TabIndex > m_ntab) {
+		return false;
     }
-  }
 
-  // check variable indices, variable should be categorical
-  for (i = 0; i < nDim; i++) {
-    d = VarList[i]; // index of variable, 1 .. m_nvar is oke
-    if (d < 1 || d > m_nvar) {
-      *pVal = VARIANT_FALSE;
-		return S_OK;
+    // check number of dimensions
+    if (nDim < 1 || nDim > MAXDIM) {
+		return false;
     }
-    if (!m_var[d - 1].IsCategorical) { // property set in SetVariable(...)
-      *pVal = VARIANT_FALSE;
-		return S_OK;
+
+    // check BIRWeightVarIndex
+    if (IsBIR) {
+        if (BIRWeightVarIndex < 1 || BIRWeightVarIndex > m_nvar || !m_var[BIRWeightVarIndex - 1].IsWeight) {
+            return false;
+        }
     }
-  }
 
-  // make zero based
-  i = TabIndex - 1;
+    // check variable indices, variable should be categorical
+    for (i = 0; i < nDim; i++) {
+        d = VarList[i]; // index of variable, 1 .. m_nvar is oke
+        if (d < 1 || d > m_nvar) {
+		return false;
+        }
+        if (!m_var[d - 1].IsCategorical) { // property set in SetVariable(...)
+            return false;
+        }
+    }
 
-  // insert table properties
-  m_tab[i].Threshold = Threshold;
+    // make zero based
+    i = TabIndex - 1;
 
-  //////////////////////
-  //m_tab[i].nDim = nDim;
-  //for (d = 0; d < nDim; d++) {
+    // insert table properties
+    m_tab[i].Threshold = Threshold;
+
+    //////////////////////
+    //m_tab[i].nDim = nDim;
+    //for (d = 0; d < nDim; d++) {
     //m_tab[i].Varnr[d] = VarList[d] - 1;
-   // m_tab[i].SizeDim[d] = 0;  // yet unknown, after ExploreFile known
-  //}
-  ///////////////////////
+    // m_tab[i].SizeDim[d] = 0;  // yet unknown, after ExploreFile known
+    //}
+    ///////////////////////
 
-  // check sequence vars, should be increasing with at least 1
-  /////////////////////
+    // check sequence vars, should be increasing with at least 1
+    /////////////////////
 
-//////////////////////////////
-  m_tab[i].BaseTable = true;
-  if (IsBIR) {
-	  m_bHasBIR = true;
-	  m_lNumBIRs++;
-	  m_tab[i].IsBIR = true;
-  }
-  else {
-	  m_tab[i].IsBIR = false;
-  }
- // m_tab[i].BIRWeightVar = BIRWeightVarIndex - 1;
+    //////////////////////////////
+    m_tab[i].BaseTable = true;
+    if (IsBIR) {
+        m_bHasBIR = true;
+	m_lNumBIRs++;
+	m_tab[i].IsBIR = true;
+    }
+    else {
+        m_tab[i].IsBIR = false;
+    }
+    // m_tab[i].BIRWeightVar = BIRWeightVarIndex - 1;
 
-  m_tab[i].SetVariables(nDim,VarList,BIRWeightVarIndex);
-  if (!m_tab[i].CheckVarSequence() ) {
-    *pVal = VARIANT_FALSE;
-		return S_OK;
-  }
-  m_tab[i].BIRThreshold = 0;  // of Threshold? AWTG 21-8-2001
+    m_tab[i].SetVariables(nDim,VarList,BIRWeightVarIndex);
+    if (!m_tab[i].CheckVarSequence() ) {
+        return false;
+    }
+    m_tab[i].BIRThreshold = 0;  // of Threshold? AWTG 21-8-2001
 
-  *pVal = VARIANT_TRUE;
-		return S_OK;
-
-
-	return S_OK;
+    return true;
 }
 
-STDMETHODIMP CMuArgCtrl::BaseIndividualRisk(long fk, double Fk, double *risk, VARIANT_BOOL *pVal)
+bool CMuArgCtrl::BaseIndividualRisk(long fk, double Fk, double *risk)
 {
-		double p; long r; double q; double x1; double x2; long i;
+    double p; long r; double q; double x1; double x2; long i;
 
+    *risk = 0;
+    if (fk == 0) goto ready; // no frequency, no risk
 
-	*risk = 0;
-  if (fk == 0) goto ready; // no frequency, no risk
-
-  // parameters correct?
-  if (fk < 0)	{
-	  *pVal = VARIANT_FALSE;
-		return S_OK;
-  }
-  if (Fk <= 0) {
-	  *pVal = VARIANT_FALSE;
-		return S_OK;
-  }
-
-
-if (RISKMODEL == 1)  //het oude risk model
-{
-  // parameters are oke
-  if (fk >= Fk) {
-    if (fk == 1 && Fk == 1) {
-      *risk = 1;
-      goto ready;
+    // parameters correct?
+    if (fk < 0)	{
+	return false;
     }
-    p = 0.999;
-  } else {
-    p = fk / Fk;
-  }
+    if (Fk <= 0) {
+	return false;
+    }
 
-  r = fk;
-
-  ASSERT(p > 0 && p < 1);
-
-  switch(r) {
-  case 1:
-    *risk = (p / ( 1 - p) ) * log(1 / p);
-    goto ready;
-  case 2:
+    if (RISKMODEL == 1)  //het oude risk model
     {
-      double h = p / (1 - p);
-      *risk = h - h * h * log(1 / p);
-      goto ready;
-    }
-  default:
-    if (r > 40) {
-      *risk = (double) p / (double)(r - 1 + p);
-      goto ready;
+        // parameters are oke
+        if (fk >= Fk) {
+            if (fk == 1 && Fk == 1) {
+                *risk = 1;
+                goto ready;
+            }
+            p = 0.999;
+        } 
+        else {
+            p = fk / Fk;
+        }
+
+        r = fk;
+
+        assert(p > 0 && p < 1);
+
+        switch(r) {
+            case 1:
+                *risk = (p / ( 1 - p) ) * log(1 / p);
+                goto ready;
+            case 2:
+            {
+                double h = p / (1 - p);
+                *risk = h - h * h * log(1 / p);
+                goto ready;
+            }
+            default:
+                if (r > 40) {
+                    *risk = (double) p / (double)(r - 1 + p);
+                    goto ready;
+                }
+                // r = 3, 4, ... 40
+                {
+                    double c1 = 1, c2 = 1;
+                    int j = 0;
+                    do {
+                        double c;
+                        c = - (pow(r - j - 1, 2) / (j + 1) ) * ((pow(p, j - r + 2) - 1) / (pow(p, j - r + 1) - 1) ) / (r - 2 - j);
+                        c2 *= c;
+                        c1 += c2;
+                        j++;
+                    } while ( j <= r - 3 && fabs(c2) >= 1E-15);
+                    double pqr = exp(r * (log(p) - log(1 - p) ) );
+                    *risk = ( ( ( pow(1 / p, r - 1) - 1) / (r - 1) ) * c1 + (r & 1 ? -1 : 1) * log(p) ) * pqr;
+                    goto ready;
+                }
+        }
     }
 
-    // r = 3, 4, ... 40
+    if (RISKMODEL == 2) // Nieuw risk model van Silvia en Luisa
     {
-      double c1 = 1, c2 = 1;
-      int j = 0;
-      do {
-        double c;
-        c = - (pow(r - j - 1, 2) / (j + 1) ) *
-          ((pow(p, j - r + 2) - 1) / (pow(p, j - r + 1) - 1) ) / (r - 2 - j);
-        c2 *= c;
-        c1 += c2;
-        j++;
-      } while ( j <= r - 3 && fabs(c2) >= 1E-15);
-      double pqr = exp(r * (log(p) - log(1 - p) ) );
-      *risk = ( ( ( pow(1 / p, r - 1) - 1) / (r - 1) ) * c1 +
-              (r & 1 ? -1 : 1) * log(p) ) * pqr;
-      goto ready;
+        // parameters are oke; fk > 0
+        if (Fk <= fk) { // < kan eigenlijk niet gewichten zouden dan < 1 moeten zijn
+                        // als Fk < fk dan eigenlijk Fk = fk beschouwen
+            *risk = 1.0 / fk;
+            goto ready;
+        }
+        else { // normale geval f < F
+            p = fk / Fk;
+        }
+
+        r = fk; q = 1 - p;
+
+        assert(p > 0 && p < 1);
+        switch (r) {
+            case 1:
+                *risk = - log (p) * ( p / q ) ;
+                goto ready;
+            case 2:
+                *risk = ( p * log(p) + q) * p / (q * q);
+                goto ready;
+            case 3:
+                *risk = p * ( q * ( 3 * q - 2) - 2 * p * p *  log(p) ) / ( 2 * q * q * q);
+                goto ready;
+            default:
+                x1 = 1;
+                x2 = 1;
+                for ( i = 1 ; i <= 7 ; i++ ) {
+                    x2 = x2 * i * q / (fk + i);
+                    x1 = x1 + x2;
+                }
+                *risk = x1 *  p / fk;
+                goto ready;
+        }
     }
-  }
+
+    ready:
+    assert(*risk >= 0 && *risk <= 1);
+    return true;
 }
-if (RISKMODEL == 2) // Nieuw risk model van Silvia en Luisa
+
+bool CMuArgCtrl::ComputeTables(long *ErrorCode, long *TableIndex)
 {
-  // parameters are oke; fk > 0
-	if (Fk <= fk) {  // < kan eigenlijk niet gewichten zouden dan < 1 moeten zijn
-		             // als Fk < fk dan eigenlijk Fk = fk beschouwen
-		*risk = 1.0 / fk;
-		goto ready;
-	} else { // normale geval f < F
-    p = fk / Fk;
-  }
+    long MemSizeAll = 0, MemSizeTable;
+    int i,j;
+    FILE *fd;
+    char str[MAXRECORDLENGTH];
 
-  r = fk; q = 1 - p;
+    // initialize errorcodes
+    *ErrorCode = -1; // na
+    *TableIndex = -1;  // na
 
-  ASSERT(p > 0 && p < 1);
-  switch (r) {
-	case 1:
-		*risk = - log (p) * ( p / q ) ;
-		goto ready;
-	case 2:
-		*risk = ( p * log(p) + q) * p / (q * q);
-		goto ready;
-	case 3:
-		*risk = p * ( q * ( 3 * q - 2) - 2 * p * p *  log(p) ) / ( 2 * q * q * q);
-		goto ready;
-	default:
-		x1 = 1;
-		x2 = 1;
-		for ( i = 1 ; i <= 7 ; i++ ) {
-			x2 = x2 * i * q / (fk + i);
-			x1 = x1 + x2;
-		}
-		*risk = x1 *  p / fk;
-		goto ready;
-  }
-}
-
-ready:
-  ASSERT(*risk >= 0 && *risk <= 1);
-  *pVal = VARIANT_TRUE;
-	return S_OK;
-
-}
-
-STDMETHODIMP CMuArgCtrl::ComputeTables(long *ErrorCode, long *TableIndex, VARIANT_BOOL *pVal)
-{
-
-	long MemSizeAll = 0, MemSizeTable;
-	int i,j;
-	FILE *fd;
-	UCHAR str[MAXRECORDLENGTH];
-
-	// initialize errorcodes
-	*ErrorCode = -1; // na
-	*TableIndex = -1;  // na
-
-	// Not the right moment, first call SetNumberVar
-	if (m_nvar == 0) {
-		*ErrorCode = NOVARIABLES;
-		*pVal = VARIANT_FALSE;
-	    return S_OK;
-	}
-
-	// Not the right moment, first call SetNumberTab
-	if (m_ntab == 0) {
-		*ErrorCode = NOTABLES;
-		*pVal = VARIANT_FALSE;
-	    return S_OK;
-	}
-
-	// First do ExploreFile
-	if (m_fname[0] == 0) {
-		*ErrorCode = NODATAFILE;
-		*pVal = VARIANT_FALSE;
-	    return S_OK;
-	}
-
-	// add SizeDim to tab
-	for (i = 0; i < m_ntab; i++) {
-		for (int d = 0; d < m_tab[i].nDim; d++) {
-			m_tab[i].SizeDim[d] = m_var[m_tab[i].Varnr[d]].nCode;
-		}
-	}
-
-	// Table returns a memory size
-
-	// compute memory size for each table
-	for (i = 0; i < m_ntab; i++) {
-		MemSizeTable = m_tab[i].GetMemSize();
-		MemSizeAll += MemSizeTable * sizeof(long);
-		if (m_tab[i].IsBIR) {
-			MemSizeAll += MemSizeTable * sizeof(double);
-		}
-	}
-
-	// check total memory to use
-	if (MemSizeAll > MAXMEMORYUSE) {
-		*ErrorCode = NOTENOUGHMEMORY;
-		*pVal = VARIANT_FALSE;
-	    return S_OK;
-	}
-
-
-	for (i = 0; i < m_ntab; i++) {
-		if(!m_tab[i].PrepareTable())	{
-			*ErrorCode = NOTABLEMEMORY;
-			*TableIndex = i + 1;
-			*pVal = VARIANT_FALSE;
-			return S_OK;
-		}
-   }
-	// make space for households
-	if ((m_lNumberOfHH != 0) && (m_bHasBIR)) {
-		m_HH = new CHousehold [m_lNumberOfHH];
-		if (m_HH == 0) {
-			// Not enough memory
-			*pVal = VARIANT_FALSE;
-			return S_OK;
-		}
-		for (i= 0; i<m_lNumberOfHH; i++) {
-			if (!m_HH[i].PrepareHouseholdBHR(m_lNumBIRs)) {
-				*pVal = VARIANT_FALSE;
-				return S_OK;
-			}
-		}
-	}
-	fd = fopen(m_fname, "r");
-	if (fd == 0) {
-		*ErrorCode = FILENOTFOUND;
-		*pVal = VARIANT_FALSE;
-	    return S_OK;
-	}
-
-	int recnr = 0;
-//hier gaat de SAS variant wel goed AHNL 30 maart 2005
-	while (!feof(fd) ) {
-		int res = ReadMicroRecord(fd, str);
-		if (++recnr % FIREPROGRESS == 0) {
-      FireUpdateProgress((short)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
+    // Not the right moment, first call SetNumberVar
+    if (m_nvar == 0) {
+	*ErrorCode = NOVARIABLES;
+        return false;
     }
-    switch (res) {
-    case INFILE_ERROR:
-      goto error;
-      break;
-    case INFILE_EOF:
-      goto oke;
-      break;
-    case INFILE_OKE:
+
+    // Not the right moment, first call SetNumberTab
+    if (m_ntab == 0) {
+	*ErrorCode = NOTABLES;
+        return false;
+    }
+
+    // First do ExploreFile
+    if (m_fname[0] == 0) {
+	*ErrorCode = NODATAFILE;
+        return false;
+    }
+
+    // add SizeDim to tab
+    for (i = 0; i < m_ntab; i++) {
+        for (int d = 0; d < m_tab[i].nDim; d++) {
+            m_tab[i].SizeDim[d] = m_var[m_tab[i].Varnr[d]].nCode;
+	}
+    }
+
+    // Table returns a memory size
+    // compute memory size for each table
+    for (i = 0; i < m_ntab; i++) {
+        MemSizeTable = m_tab[i].GetMemSize();
+	MemSizeAll += MemSizeTable * sizeof(long);
+	if (m_tab[i].IsBIR) {
+            MemSizeAll += MemSizeTable * sizeof(double);
+	}
+    }
+
+    // check total memory to use
+    if (MemSizeAll > MAXMEMORYUSE) {
+	*ErrorCode = NOTENOUGHMEMORY;
+        return false;
+    }
+
+    for (i = 0; i < m_ntab; i++) {
+	if(!m_tab[i].PrepareTable())	{
+            *ErrorCode = NOTABLEMEMORY;
+            *TableIndex = i + 1;
+            return false;
+	}
+    }
+    // make space for households
+    if ((m_lNumberOfHH != 0) && (m_bHasBIR)) {
+        m_HH = new CHousehold [m_lNumberOfHH];
+	if (m_HH == 0) {
+            // Not enough memory
+            return false;
+	}
+	for (i= 0; i<m_lNumberOfHH; i++) {
+            if (!m_HH[i].PrepareHouseholdBHR(m_lNumBIRs)) {
+		return false;
+            }
+	}
+    }
+    fd = fopen(m_fname, "r");
+    if (fd == 0) {
+	*ErrorCode = FILENOTFOUND;
+        return false;
+    }
+
+    int recnr = 0;
+    //hier gaat de SAS variant wel goed AHNL 30 maart 2005
+    while (!feof(fd) ) {
+        int res = ReadMicroRecord(fd, str);
+	if (++recnr % FIREPROGRESS == 0) {
+            FireUpdateProgress((short)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
+        }
+        switch (res) {
+            case INFILE_ERROR:
+                goto error;
+                break;
+            case INFILE_EOF:
+                goto oke;
+                break;
+            case INFILE_OKE:
 		if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)&&(recnr == 1)) {
-			continue;
+                    continue;
 		}
 		else {
-
-			FillTables(str);
-			break;
+                    FillTables(str);
+                    break;
 		}
+        }
     }
-  }
 
+    oke:
+    // Once more to fill Households
+    if ((m_lNumberOfHH>0) && (m_bHasBIR)) {
+	rewind(fd);
+	int res;
+	if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)) {
+            res = ReadMicroRecord(fd, str);
+	}
 
-
-
-
-	oke:
-  		// Once more to fill Households
-
-	if ((m_lNumberOfHH>0) && (m_bHasBIR)) {
-		rewind(fd);
-		int res;
-		if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)) {
-			res = ReadMicroRecord(fd, str);
-		}
-
-		bool newhousehold = false;
-		long numberofmem = 0;
-		long HHnum = 0;
-		while (!feof(fd) ) {
-			res = ReadMicroRecord(fd, str);
-			if (++recnr % FIREPROGRESS == 0) {
-			FireUpdateProgress((short)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
-		 }
-		 switch (res) {
-		 case INFILE_ERROR:
-			goto error;
-			break;
-		 case INFILE_EOF:
-			m_HH[m_lNumberOfHH - 1].m_lNumberofMembers = numberofmem;
-			goto oke1;
-			break;
-		 case INFILE_OKE:
-//			if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)&&(recnr == 1)) {
+	bool newhousehold = false;
+	long numberofmem = 0;
+	long HHnum = 0;
+	while (!feof(fd) ) {
+            res = ReadMicroRecord(fd, str);
+            if (++recnr % FIREPROGRESS == 0) {
+                FireUpdateProgress((short)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
+            }
+            switch (res) {
+                case INFILE_ERROR:
+                    goto error;
+                    break;
+                case INFILE_EOF:
+                    m_HH[m_lNumberOfHH - 1].m_lNumberofMembers = numberofmem;
+                    goto oke1;
+                    break;
+		case INFILE_OKE:
+//                  if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)&&(recnr == 1)) {
 //				continue;
 //			}
 //			else {
 				//Here find the number of members in a household
-				newhousehold = IsNewHH(str);
-				if (newhousehold) {
-					m_HH[HHnum].m_lNumberofMembers= numberofmem;
-					numberofmem = 1;
-					HHnum++;
-				}
-				else {
-					numberofmem ++;
-				}
-				break;
-//			}
-		 }
-	  }
-		m_HH[HHnum].m_lNumberofMembers= numberofmem;
+                    newhousehold = IsNewHH(str);
+                    if (newhousehold) {
+                        m_HH[HHnum].m_lNumberofMembers= numberofmem;
+			numberofmem = 1;
+			HHnum++;
+                    }
+                    else {
+                        numberofmem ++;
+                    }
+                    break;
+//		}
+            }
+        }
+	m_HH[HHnum].m_lNumberofMembers= numberofmem;
 
-	}
-	else {
-		// should I close fd;
-	}
+    }
+    else {
+	// should I close fd;
+    }
 
-oke1:
-	fclose(fd);
+    oke1:
+    fclose(fd);
 
+    LastHHName = ""; CurrentHHName = "";
+    ComputeSubTableList();
+    return true;
 
-	LastHHName = ""; CurrentHHName = "";
-	ComputeSubTableList();
-	*pVal = VARIANT_TRUE;
-	return S_OK;
-
-	error:
-		fclose(fd);
-		*pVal = VARIANT_FALSE;
-		return S_OK;
+    error:
+    fclose(fd);
+    return false;
 }
 
 
 
-BOOL CMuArgCtrl::ComputeTableIndex(UCHAR *str, CVariable *var, long Index)
-{ char code[MAXCODEWIDTH];
+bool CMuArgCtrl::ComputeTableIndex(char *str, CVariable *var, long Index)
+{ 
+    char code[MAXCODEWIDTH];
 
-  bool IsMissing;
-  CString tempcode;
-  if (m_InFileIsFixedFormat) {
-	  strncpy(code, (char *) &str[var->bPos], var->nPos);
-	  code[var->nPos] = 0;
-  }
-  else {
-	  if (ReadVariableFreeFormat(str,Index,&(tempcode))) {
-				strcpy(code,(const char*)tempcode);
-				code[var->nPos] = 0;
-	  }
-  }
-  tempcode = code;
-  if (!(var->SetTableIndex(code))) {
-	  return false;
-  }
+    bool IsMissing;
+    std::string tempcode;
+    if (m_InFileIsFixedFormat) {
+        strncpy(code, (char *) &str[var->bPos], var->nPos);
+	code[var->nPos] = 0;
+    }
+    else {
+	if (ReadVariableFreeFormat(str,Index,&(tempcode))) {
+            strcpy(code,(const char*)tempcode.c_str());
+            code[var->nPos] = 0;
+	}
+    }
+    tempcode = code;
+    if (!(var->SetTableIndex(code))) {
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 
-void CMuArgCtrl::FillTables(UCHAR *str)
-{ int i, j;
-  double Weight = 0;
+void CMuArgCtrl::FillTables(char *str)
+{ 
+    int i, j;
+    double Weight = 0;
 
-  // set TableIndex and recode in VARIABLES as na
-  for (i = 0; i < m_nvar; i++) {
-    m_var[i].TableIndex = -1;
-    m_var[i].Recode.DestCode = 0;
-  }
-
-  // compute for each involved variable the table index
-  for (i = 0; i < m_ntab; i++) {
-    CTable *tab = &(m_tab[i]);
-    for (j = 0; j < tab->nDim; j++) {
-      CVariable *var = &(m_var[tab->Varnr[j]]);
-      if (var->TableIndex < 0) { // first time, so compute index
-        ComputeTableIndex(str, var, tab->Varnr[j]);
-      }
+    // set TableIndex and recode in VARIABLES as na
+    for (i = 0; i < m_nvar; i++) {
+        m_var[i].TableIndex = -1;
+        m_var[i].Recode.DestCode = 0;
     }
-  }
 
-  // now tabulate all tables from list
-  for (i = 0; i < m_ntab; i++) {
-    if (m_tab[i].IsBIR) {
-      int WeightVar = m_tab[i].BIRWeightVar;
-			char code[MAXCODEWIDTH];
-			CString tempcode;
-
-      ASSERT(WeightVar >= 0 && WeightVar < m_nvar);
-
-		// Here Change code
-		if (m_InFileIsFixedFormat) {
-			strncpy(code, (char *) (&str[m_var[WeightVar].bPos]), m_var[WeightVar].nPos);
-			code[m_var[WeightVar].nPos] = 0;
-		}
-		else {
-			if (ReadVariableFreeFormat(str,WeightVar,&(tempcode))) {
-				strcpy(code,(const char*)tempcode);
-				code[m_var[WeightVar].nPos] = 0;
-			 }
-		}
-      Weight = atof(code);
-    } else {
-      Weight = 0;
+    // compute for each involved variable the table index
+    for (i = 0; i < m_ntab; i++) {
+        CTable *tab = &(m_tab[i]);
+        for (j = 0; j < tab->nDim; j++) {
+            CVariable *var = &(m_var[tab->Varnr[j]]);
+            if (var->TableIndex < 0) { // first time, so compute index
+                ComputeTableIndex(str, var, tab->Varnr[j]);
+            }
+        }
     }
-    AddTableCell(m_tab[i], Weight);
-  }
+
+    // now tabulate all tables from list
+    for (i = 0; i < m_ntab; i++) {
+        if (m_tab[i].IsBIR) {
+            int WeightVar = m_tab[i].BIRWeightVar;
+            char code[MAXCODEWIDTH];
+            std::string tempcode;
+
+            assert(WeightVar >= 0 && WeightVar < m_nvar);
+            // Here Change code
+            if (m_InFileIsFixedFormat) {
+                strncpy(code, (char *) (&str[m_var[WeightVar].bPos]), m_var[WeightVar].nPos);
+		code[m_var[WeightVar].nPos] = 0;
+            }
+            else {
+                if (ReadVariableFreeFormat(str,WeightVar,&(tempcode))) {
+                    strcpy(code,(const char*)tempcode.c_str());
+                    code[m_var[WeightVar].nPos] = 0;
+		}
+            }
+            Weight = atof(code);
+        } else {
+            Weight = 0;
+        }
+        AddTableCell(m_tab[i], Weight);
+    }
 }
 
 void CMuArgCtrl::AddTableCell(CTable& t, double Weight)
-{ int i, cellindex = 0;
-  CString code;
-  int SizeDim[MAXDIM];
+{
+    int i, cellindex = 0;
+    int SizeDim[MAXDIM];
 
-  // compute size of all dims
-  for (i = 0; i < t.nDim; i++) {
-    SizeDim[i] = m_var[t.Varnr[i]].nCode;
-  }
+    // compute size of all dims
+    for (i = 0; i < t.nDim; i++) {
+        SizeDim[i] = m_var[t.Varnr[i]].nCode;
+    }
 
-  // compute cellindex
-  for (i = 0; i < t.nDim; i++) {
-    cellindex *= SizeDim[i];
-    cellindex += m_var[t.Varnr[i] ].TableIndex; // index in table of code for each variable
-    // if (i < t.nDim - 1) cellindex *= SizeDim[i + 1];
-  }
+    // compute cellindex
+    for (i = 0; i < t.nDim; i++) {
+        cellindex *= SizeDim[i];
+        cellindex += m_var[t.Varnr[i] ].TableIndex; // index in table of code for each variable
+        // if (i < t.nDim - 1) cellindex *= SizeDim[i + 1];
+    }
 
-  ASSERT(cellindex >= 0 && cellindex < t.nCell);
-  t.Cell[cellindex]++;
-  if (t.IsBIR) {
-    t.BIRCell[cellindex] += Weight;
-  }
+    assert(cellindex >= 0 && cellindex < t.nCell);
+    t.Cell[cellindex]++;
+    if (t.IsBIR) {
+        t.BIRCell[cellindex] += Weight;
+    }
 }
 
 int CMuArgCtrl::ComputeSubTableList()
 {
-	int i;
-   int vars[MAXDIM];
-   int dim, maxdim;
+    int i;
+    int vars[MAXDIM];
+    int dim, maxdim;
 
-   // free results previous action
-	// may be you don't need this becoz UCList is removed and thus tables
-   for (i = 0; i < m_nUC; i++) {
-		if (m_UCList[i].nDim != m_tab[m_UCList[i].TabNr].nDim) {  // no base table
-			delete[] m_UCList[i].table.Cell;
-			m_UCList[i].table.Cell = 0;
-			m_UCList[i].table.nCell = 0;
-			if (m_UCList[i].table.IsBIR) {
-				if (m_UCList[i].table.BIRCell != 0) {
-					delete[] m_UCList[i].table.BIRCell;
-					m_UCList[i].table.BIRCell = 0;
-				}
-			}
+    // free results previous action
+    // may be you don't need this becoz UCList is removed and thus tables
+    for (i = 0; i < m_nUC; i++) {
+        if (m_UCList[i].nDim != m_tab[m_UCList[i].TabNr].nDim) {  // no base table
+            delete[] m_UCList[i].table.Cell;
+            m_UCList[i].table.Cell = 0;
+            m_UCList[i].table.nCell = 0;
+            if (m_UCList[i].table.IsBIR) {
+                if (m_UCList[i].table.BIRCell != 0) {
+                    delete[] m_UCList[i].table.BIRCell;
+                    m_UCList[i].table.BIRCell = 0;
 		}
-  }
-
-
-	if (m_unsafe != 0) {
-		delete [] m_unsafe;
-		m_unsafe = 0;
+            }
 	}
+    }
 
-	m_unsafe = new int[1][MAXDIM + 1];
-	if (m_unsafe == 0) {
-		return -1;
-	}
-	memset(m_unsafe, 0, sizeof(int) * (MAXDIM + 1));
+    if (m_unsafe != 0) {
+        delete [] m_unsafe;
+	m_unsafe = 0;
+    }
 
-	m_cuc = m_nUC = 0;
+    m_unsafe = new int[1][MAXDIM + 1];
+    if (m_unsafe == 0) {
+        return -1;
+    }
+    memset(m_unsafe, 0, sizeof(int) * (MAXDIM + 1));
+    
+    m_cuc = m_nUC = 0;
 
-	// first compute number of (sub)tables
-	for (i = 0; i < m_ntab; i++) {
+    // first compute number of (sub)tables
+    for (i = 0; i < m_ntab; i++) {
     // if (m_tab[i].IsBIR) continue; // no subtables for BIR tables, or???
-		m_nUC += (int)(pow(2, m_tab[i].nDim) + .001) - 1;
-	}
+        m_nUC += (int)(pow(2, m_tab[i].nDim) + .001) - 1;
+    }
 
-  // free previous action
-	if (m_UCList != 0) { // not the first time
-		delete [] m_UCList;
-	}
+    // free previous action
+    if (m_UCList != 0) { // not the first time
+        delete [] m_UCList;
+    }
 
-	// allocate memory for it
-	m_UCList = new CUCList[m_nUC];
-	if (m_UCList == 0) {
-		return -1;
-	}
+    // allocate memory for it
+    m_UCList = new CUCList[m_nUC];
+    if (m_UCList == 0) {
+        return -1;
+    }
 
-	for (i = 0; i < m_ntab; i++) {
+    for (i = 0; i < m_ntab; i++) {
     // if (m_tab[i].IsBIR) continue; // no subtables for BIR tables, or???
-		DoSubTableList(i, 0, 0, vars, -1);
+        DoSubTableList(i, 0, 0, vars, -1);
+    }
+    assert(m_cuc <= m_nUC);
+    m_nUC = m_cuc;
+
+    // compute max dim
+    maxdim = 0;
+    for (i = 0; i < m_nUC; i++) {
+        if (m_UCList[i].nDim > maxdim) {
+            maxdim = m_UCList[i].nDim;
 	}
-	ASSERT(m_cuc <= m_nUC);
-	m_nUC = m_cuc;
+    }
 
-	// compute max dim
-	maxdim = 0;
-	for (i = 0; i < m_nUC; i++) {
-		if (m_UCList[i].nDim > maxdim) {
-			maxdim = m_UCList[i].nDim;
-		}
+    CTable t;
+    int nTables = 0;
+    // compute subtables
+    for (dim = maxdim - 1; dim > 0; dim--) {
+        for (i = 0; i < m_nUC; i++) {
+            CUCList *u = &(m_UCList[i]);     // for easier and faster reference
+            if (u->nDim != dim) continue;
+            if (dim == m_tab[u->TabNr].nDim) continue;
+            // fill subtable data
+            t.nDim = dim;
+            for (int j = 0; j < dim; j++) {
+                t.Varnr[j] = u->Varnr[j];
+                t.SizeDim[j] = m_var[t.Varnr[j]].GetnCodes(true);
+            }
+            t.Threshold = u->Threshold;
+            t.BaseTable = false;
+            // find a table with one dimension more that contains the same variables
+            for (int k = 0; k < m_nUC; k++) {
+                if (dim + 1 != m_UCList[k].nDim) continue;
+                if (dim + 1 == m_tab[m_UCList[k].TabNr].nDim) {  // basis table is a permanent table
+                    if (ComputeSubTable(m_tab[m_UCList[k].TabNr], t) > 0)  {
+                        FireUpdateProgress( (short) (++nTables * 100.0 / m_nUC));
+                        break;
+                    }
+                }
+                else {
+                    if (dim + 1 == m_UCList[k].nDim) {             // basis table is a subtable
+                        if (ComputeSubTable(m_UCList[k].table, t) > 0)  {  // an earlier computed table
+                            break;
+                        }
+                    }
+                }
+            }
+            //assert(k < m_nUC); // table created
+            assert(m_UCList[i].nDim > 0 &&  m_UCList[i].nDim <= MAXDIM);
+            m_unsafe[0][m_UCList[i].nDim] = 0;
+            m_UCList[i].table = t;  // save table in UCList
+            m_UCList[i].nUC = m_unsafe[0][m_UCList[i].nDim]; // not for every code
+        }
+    }
+
+    FireUpdateProgress(100);
+    /// print tables out from here
+
+    // compute unsafe cells in m_unsafe for every table
+    for (i = 0; i < m_nUC; i++) {
+        CUCList *u = &(m_UCList[i]);
+        m_unsafe[0][u->nDim] = 0;
+	if (u->nDim == m_tab[u->TabNr].nDim) { // base table
+            ComputeUnsafeCells(m_tab[u->TabNr], -1);
 	}
-
-	CTable t;
-	int nTables = 0;
-	// compute subtables
-	for (dim = maxdim - 1; dim > 0; dim--) {
-		for (i = 0; i < m_nUC; i++) {
-			CUCList *u = &(m_UCList[i]);     // for easier and faster reference
-			if (u->nDim != dim) continue;
-			if (dim == m_tab[u->TabNr].nDim) continue;
-			// fill subtable data
-			t.nDim = dim;
-			for (int j = 0; j < dim; j++) {
-				t.Varnr[j] = u->Varnr[j];
-				t.SizeDim[j] = m_var[t.Varnr[j]].GetnCodes(true);
-			}
-			t.Threshold = u->Threshold;
-			t.BaseTable = false;
-			// find a table with one dimension more that contains the same variables
-			for (int k = 0; k < m_nUC; k++) {
-				if (dim + 1 != m_UCList[k].nDim) continue;
-				if (dim + 1 == m_tab[m_UCList[k].TabNr].nDim) {  // basis table is a permanent table
-					if (ComputeSubTable(m_tab[m_UCList[k].TabNr], t) > 0)  {
-						FireUpdateProgress( (short) (++nTables * 100.0 / m_nUC));
-						break;
-					}
-				}
-				else {
-					if (dim + 1 == m_UCList[k].nDim) {             // basis table is a subtable
-						if (ComputeSubTable(m_UCList[k].table, t) > 0)  {  // an earlier computed table
-							break;
-						}
-					}
-				}
-			}
-			ASSERT(k < m_nUC); // table created
-			ASSERT(m_UCList[i].nDim > 0 &&  m_UCList[i].nDim <= MAXDIM);
-			m_unsafe[0][m_UCList[i].nDim] = 0;
-			m_UCList[i].table = t;  // save table in UCList
-			m_UCList[i].nUC = m_unsafe[0][m_UCList[i].nDim]; // not for every code
-		}
+	else {
+            ComputeUnsafeCells(u->table, -1);
 	}
+	u->nUC = m_unsafe[0][u->nDim]; // not for every code
+    }
+    // sort UCList on identical variable combinations,
+    // equals have largest threshold first
+    SortUCList(m_nUC, m_UCList);
 
-	FireUpdateProgress(100);
-   /// print tables out from here
-
-   // compute unsafe cells in m_unsafe for every table
-   for (i = 0; i < m_nUC; i++) {
-		CUCList *u = &(m_UCList[i]);
-		m_unsafe[0][u->nDim] = 0;
-		if (u->nDim == m_tab[u->TabNr].nDim) { // base table
-
-			ComputeUnsafeCells(m_tab[u->TabNr], -1);
-		}
-		else {
-			ComputeUnsafeCells(u->table, -1);
-		}
-		u->nUC = m_unsafe[0][u->nDim]; // not for every code
+    CUCList temp = m_UCList[0];
+    m_UCList[0].biggestThreshold = true;
+    for (i = 1; i < m_nUC; i++)
+    {
+        while (i < m_nUC && CompareUCList(temp, m_UCList[i]) == 0) {
+            m_UCList[i].biggestThreshold = false;
+            i++;
 	}
-	// sort UCList on identical variable combinations,
-   // equals have largest threshold first
-   SortUCList(m_nUC, m_UCList);
-
-	CUCList temp = m_UCList[0];
-	m_UCList[0].biggestThreshold = true;
-	for (i = 1; i < m_nUC; i++)
+	if (i <m_nUC)
 	{
-
-		while (i < m_nUC && CompareUCList(temp, m_UCList[i]) == 0) {
-			m_UCList[i].biggestThreshold = false;
-
-			i++;
-		}
-		if (i <m_nUC)
-		{
-
-			temp = m_UCList[i];
-			m_UCList[i].biggestThreshold = true;
-		}
+            temp = m_UCList[i];
+            m_UCList[i].biggestThreshold = true;
 	}
-	return maxdim;
+    }
+    return maxdim;
 }
-
 
 void CMuArgCtrl::DoSubTableList(int iTab, int niv, int from, int *vars, int CVar)
 {
-	int i, j;
+    int i, j;
 
-	for (i = from; i < m_tab[iTab].nDim; i++) {
-    CUCList uc;
-    //memset(&uc, 0, sizeof(UCLIST) );
-    if (m_tab[iTab].HasRecode) {
-      uc.TabNr = iTab + m_ntab; // take the recoded table!
-    } else {
-      uc.TabNr = iTab;  // take the permanent table
-    }
-    uc.nDim = niv + 1;
-    uc.nUC = 0;  // will be filled later
-    uc.Threshold = m_tab[iTab].Threshold;
-    for (j = 0; j < niv; j++) {
-      uc.Varnr[j] = vars[j];
-    }
-    uc.Varnr[niv] = m_tab[iTab].Varnr[i];
-    ASSERT(m_cuc >= 0 && m_cuc < m_nUC);
+    for (i = from; i < m_tab[iTab].nDim; i++) {
+        CUCList uc;
+        //memset(&uc, 0, sizeof(UCLIST) );
+        if (m_tab[iTab].HasRecode) {
+            uc.TabNr = iTab + m_ntab; // take the recoded table!
+        } else {
+            uc.TabNr = iTab;  // take the permanent table
+        }
+        uc.nDim = niv + 1;
+        uc.nUC = 0;  // will be filled later
+        uc.Threshold = m_tab[iTab].Threshold;
+        for (j = 0; j < niv; j++) {
+            uc.Varnr[j] = vars[j];
+        }
+        uc.Varnr[niv] = m_tab[iTab].Varnr[i];
+        assert(m_cuc >= 0 && m_cuc < m_nUC);
 
-    // if CVar >= 0: CVar should be in uc.Varnr[]
-    for (j = 0; j <= niv; j++) {
-      if (CVar < 0) break;
-      if (uc.Varnr[j] == CVar) break;
-    }
+        // if CVar >= 0: CVar should be in uc.Varnr[]
+        for (j = 0; j <= niv; j++) {
+            if (CVar < 0) break;
+            if (uc.Varnr[j] == CVar) break;
+        }
 
 	//----------------------
 
 	//add memory for the
 	//----------------------
-    if (j <= niv ) {
-      m_UCList[m_cuc++] = uc;  // add to list
-    }
+        if (j <= niv ) {
+            m_UCList[m_cuc++] = uc;  // add to list
+        }
 
-    // to next level
-    vars[niv] = m_tab[iTab].Varnr[i];
-    DoSubTableList(iTab, niv + 1, i + 1, vars, CVar);
-  }
+        // to next level
+        vars[niv] = m_tab[iTab].Varnr[i];
+        DoSubTableList(iTab, niv + 1, i + 1, vars, CVar);
+    }
 
 }
 
 int CMuArgCtrl::ComputeSubTable(CTable &BaseTable, CTable &SubTable)
 {
+    int i, j;
+    int IsSubVar[MAXDIM];  // for each base variable true or false for "in table"
 
-	int i, j;
-   int IsSubVar[MAXDIM];  // for each base variable true or false for "in table"
+    // is indeed a SUBtable?
+    assert(SubTable.nDim > 0 && SubTable.nDim < BaseTable.nDim);
+    if (SubTable.nDim >= BaseTable.nDim) { // that's no sub
+        return -SUBTABLENOSUB;
+    }
+    // initialize all base table variables on false
+    memset(IsSubVar, false, sizeof(IsSubVar) );
 
-   // is indeed a SUBtable?
-   ASSERT(SubTable.nDim > 0 && SubTable.nDim < BaseTable.nDim);
-   if (SubTable.nDim >= BaseTable.nDim) { // that's no sub
-		return -SUBTABLENOSUB;
+    // set subtable variables on true
+    for (i = 0; i < SubTable.nDim; i++) {
+        for (j = 0; j < BaseTable.nDim; j++) {
+            if (BaseTable.Varnr[j] == SubTable.Varnr[i]) {
+                IsSubVar[j] = true;
+		break;
+            }
 	}
-	 // initialize all base table variables on false
-	memset(IsSubVar, false, sizeof(IsSubVar) );
-
-	// set subtable variables on true
-	for (i = 0; i < SubTable.nDim; i++) {
-		for (j = 0; j < BaseTable.nDim; j++) {
-			if (BaseTable.Varnr[j] == SubTable.Varnr[i]) {
-				IsSubVar[j] = true;
-				break;
-			}
-		}
-		if (j == BaseTable.nDim) {  // varnr not in table, error
-			return -SUBTABLEWRONGVAR;
-		}
+	if (j == BaseTable.nDim) {  // varnr not in table, error
+            return -SUBTABLEWRONGVAR;
 	}
+    }
 
-	SubTable.nCell = 1;
-	for (i = 0; i < SubTable.nDim; i++) {
-		SubTable.nCell *= SubTable.SizeDim[i];
-	}
-	if (SubTable.IsBIR = BaseTable.IsBIR) {
-		SubTable.BIRThreshold = BaseTable.BIRThreshold;
-		SubTable.BIRWeightVar = BaseTable.BIRWeightVar;
-	}
+    SubTable.nCell = 1;
+    for (i = 0; i < SubTable.nDim; i++) {
+        SubTable.nCell *= SubTable.SizeDim[i];
+    }
+    if (SubTable.IsBIR = BaseTable.IsBIR) {
+        SubTable.BIRThreshold = BaseTable.BIRThreshold;
+	SubTable.BIRWeightVar = BaseTable.BIRWeightVar;
+    }
 
-	if (!SubTable.PrepareTable()) {
-		return -NOTENOUGHMEMORY;
-	}
+    if (!SubTable.PrepareTable()) {
+        return -NOTENOUGHMEMORY;
+    }
 
-	MakeSubTable(BaseTable, SubTable, 0, 0, 0, IsSubVar);
+    MakeSubTable(BaseTable, SubTable, 0, 0, 0, IsSubVar);
 
-	return true;
+    return true;
 }
 
-void CMuArgCtrl::MakeSubTable(
-              CTable& BaseTab, CTable& SubTab,
-              int niv, int iParentCell, int iSubCell, int *tabvars)
+void CMuArgCtrl::MakeSubTable(CTable& BaseTab, CTable& SubTab, int niv, int iParentCell, int iSubCell, int *tabvars)
 {
-	int i, n, v;
+    int i, n, v;
 
-	if (niv == BaseTab.nDim) {  // basic level, so count
-		ASSERT(iSubCell >= 0 && iSubCell < SubTab.nCell);
-		ASSERT(iParentCell >= 0 && iParentCell < BaseTab.nCell);
-		SubTab.Cell[iSubCell] += BaseTab.Cell[iParentCell];
+    if (niv == BaseTab.nDim) {  // basic level, so count
+        assert(iSubCell >= 0 && iSubCell < SubTab.nCell);
+	assert(iParentCell >= 0 && iParentCell < BaseTab.nCell);
+	SubTab.Cell[iSubCell] += BaseTab.Cell[iParentCell];
 
-		// also for BIR
-		if (BaseTab.IsBIR) {
-			SubTab.BIRCell[iSubCell] += BaseTab.BIRCell[iParentCell];
-		}
-
-		return;
+	// also for BIR
+	if (BaseTab.IsBIR) {
+            SubTab.BIRCell[iSubCell] += BaseTab.BIRCell[iParentCell];
 	}
 
-	v = BaseTab.Varnr[niv];     // index of variable niv
-	n = BaseTab.SizeDim[niv];   // number of codes
+	return;
+    }
 
-	for (i = 0; i < n; i++) {
-		int iSub, iParent;
-		// compute iSub: index in subtable
-		iSub = iSubCell;
-		if (tabvars[niv]) {  // variable is in subtable
-			iSub *= BaseTab.SizeDim[niv];
-			iSub += i;
-		}
-
-		// compute iParent: index in parent table
-		iParent = iParentCell;
-		iParent *= BaseTab.SizeDim[niv];
-		iParent += i;
-
-		MakeSubTable(BaseTab, SubTab, niv + 1, iParent, iSub, tabvars);
-	} // forloop with i = index code of a variable
-}
-
-BOOL CMuArgCtrl::ComputeUnsafeCells(CTable & t, int CVar)
-{
-	ComputeNumberUnsafeCells(t, 0, 0, false, CVar);
-	return true;
-}
-
-void CMuArgCtrl::ComputeNumberUnsafeCells(CTable & t, int niv, int cindex,
-											 BOOL IsMissingCode, int CVar, int code)
-{
-	ASSERT(CVar < m_nvar);
-	ASSERT( (CVar < 0 && code < 0) || (CVar >= 0 && code >= -1 && code < m_var[CVar].nCode) );
-
-	if (niv == t.nDim) {
-		ASSERT(cindex >= 0 && cindex < t.nCell);
-		ASSERT(CVar < 0 || code >= 0);
-		if (t.Cell[cindex] <= t.Threshold && t.Cell[cindex] != 0 &&
-			!IsMissingCode) {
-			if (CVar < 0) {
-				m_unsafe[0][niv]++;
-			}
-			else {
-				m_unsafe[code][niv]++;
-			}
-		}
-		if (CVar >= 0 && t.nDim == 1) {  // save freq
-			m_unsafe[code][0] = t.Cell[cindex];
-		}
-		return;
+    v = BaseTab.Varnr[niv];     // index of variable niv
+    n = BaseTab.SizeDim[niv];   // number of codes
+    
+    for (i = 0; i < n; i++) {
+        int iSub, iParent;
+	// compute iSub: index in subtable
+	iSub = iSubCell;
+	if (tabvars[niv]) {  // variable is in subtable
+            iSub *= BaseTab.SizeDim[niv];
+            iSub += i;
 	}
+	// compute iParent: index in parent table
+	iParent = iParentCell;
+	iParent *= BaseTab.SizeDim[niv];
+	iParent += i;
 
+	MakeSubTable(BaseTab, SubTab, niv + 1, iParent, iSub, tabvars);
+    } // forloop with i = index code of a variable
+}
 
-	int i, c;
-	int v = t.Varnr[niv];
-	int n, NMis;
-	BOOL Mis;
-	CVariable *var;
-	var = &(m_var[t.Varnr[niv]]);
+bool CMuArgCtrl::ComputeUnsafeCells(CTable & t, int CVar)
+{
+    ComputeNumberUnsafeCells(t, 0, 0, false, CVar);
+    return true;
+}
 
-	// compute number of codes of variable v, can be recoded!
-	//n = GetnCodes(v, true);
-	n = var->GetnCodes(true);
+void CMuArgCtrl::ComputeNumberUnsafeCells(CTable & t, int niv, int cindex, bool IsMissingCode, int CVar, int code)
+{
+    assert(CVar < m_nvar);
+    assert( (CVar < 0 && code < 0) || (CVar >= 0 && code >= -1 && code < m_var[CVar].nCode) );
+
+    if (niv == t.nDim) {
+        assert(cindex >= 0 && cindex < t.nCell);
+	assert(CVar < 0 || code >= 0);
+	if (t.Cell[cindex] <= t.Threshold && t.Cell[cindex] != 0 && !IsMissingCode) {
+            if (CVar < 0) {
+                m_unsafe[0][niv]++;
+            }
+            else {
+                m_unsafe[code][niv]++;
+            }
+	}
+	if (CVar >= 0 && t.nDim == 1) {  // save freq
+            m_unsafe[code][0] = t.Cell[cindex];
+	}
+	return;
+    }
+
+    int i, c;
+    int v = t.Varnr[niv];
+    int n, NMis;
+    bool Mis;
+    CVariable *var;
+    var = &(m_var[t.Varnr[niv]]);
+    
+    // compute number of codes of variable v, can be recoded!
+    //n = GetnCodes(v, true);
+    n = var->GetnCodes(true);
 //	if (CVar < 0) {  // don't count missings for left pane
 // even kortgesloten Anco 21/1/2005
-		if (m_var[v].HasRecode) {
+    if (m_var[v].HasRecode) {
 //			n -= m_var[v].Recode.nMissing;
-			NMis = n - m_var[v].Recode.nMissing;
-		}
-		else {
+        NMis = n - m_var[v].Recode.nMissing;
+    }
+    else {
 //			n -= m_var[v].nMissing;
-			NMis = n - m_var[v].nMissing;
-		}
+        NMis = n - m_var[v].nMissing;
+    }
 //	}
 
-	for (i = 0; i < n; i++) {
-		c = cindex;
-		c *= t.SizeDim[niv];
-		c += i;
-		if (v == CVar) code = i;
-		Mis = (i >= NMis)  || IsMissingCode;
-		ComputeNumberUnsafeCells(t, niv + 1, c, Mis, CVar, code);
-	}
-
+    for (i = 0; i < n; i++) {
+        c = cindex;
+	c *= t.SizeDim[niv];
+	c += i;
+	if (v == CVar) code = i;
+        Mis = (i >= NMis)  || IsMissingCode;
+        ComputeNumberUnsafeCells(t, niv + 1, c, Mis, CVar, code);
+    }
 }
 
 void CMuArgCtrl::SortUCList(int n, CUCList *uc)
 {
-	if (n > 1) {
-		QuickSortUCList(uc, 0, n - 1);
-	}
+    if (n > 1) {
+        QuickSortUCList(uc, 0, n - 1);
+    }
 }
-
 
 void CMuArgCtrl::QuickSortUCList(CUCList *s, int first, int last)
 {
-	int i, j;
-  CUCList mid, temp;
+    int i, j;
+    CUCList mid, temp;
 
-  ASSERT(first >= 0 && last >= first);
+    assert(first >= 0 && last >= first);
 
-  do {
-    i = first;
-    j = last;
-    mid = s[(i + j) / 2];
     do {
-      while (CompareUCListThres(s[i], mid) < 0) i++;
-      while (CompareUCListThres(s[j], mid) > 0) j--;
-      if (i < j) {
-        temp = s[i];
-        s[i] = s[j];
-        s[j] = temp;
-      } else {
-        if (i == j) {
-          i++;
-          j--;
-        }
-        break;
-      }
-    } while (++i <= --j);
+        i = first;
+        j = last;
+        mid = s[(i + j) / 2];
+        do {
+            while (CompareUCListThres(s[i], mid) < 0) i++;
+            while (CompareUCListThres(s[j], mid) > 0) j--;
+            if (i < j) {
+                temp = s[i];
+                s[i] = s[j];
+                s[j] = temp;
+            } 
+            else {
+                if (i == j) {
+                    i++;
+                    j--;
+                }
+                break;
+            }
+        } while (++i <= --j);
 
-    if (j - first < last - i) {
-      if (j > first) {
-        QuickSortUCList(s, first, j);
-      }
-      first = i;
-    } else {
-      if (i < last) {
-        QuickSortUCList(s, i, last);
-      }
-      last = j;
-    }
-  } while (first < last);
+        if (j - first < last - i) {
+            if (j > first) {
+                QuickSortUCList(s, first, j);
+            }
+            first = i;
+        }
+        else {
+            if (i < last) {
+                QuickSortUCList(s, i, last);
+            }
+            last = j;
+        }
+    } while (first < last);
 }
 
 int CMuArgCtrl::CompareUCListThres(CUCList& a, CUCList& b)
 {
-	int v;
+    int v;
 
-	v = memcmp(a.Varnr, b.Varnr, sizeof(a.Varnr) );
-	if (v != 0) return v;
-	//return (a.Threshold < b.Threshold);
-	return b.Threshold - a.Threshold;
-
+    v = memcmp(a.Varnr, b.Varnr, sizeof(a.Varnr) );
+    if (v != 0) return v;
+    //return (a.Threshold < b.Threshold);
+    return b.Threshold - a.Threshold;
 }
 
 int CMuArgCtrl::CompareUCList(CUCList& a, CUCList& b)
 {
-	return memcmp(a.Varnr, b.Varnr, sizeof(a.Varnr) );
+    return memcmp(a.Varnr, b.Varnr, sizeof(a.Varnr) );
 }
 
-STDMETHODIMP CMuArgCtrl::GetMaxnUC(long *pVal)
+long CMuArgCtrl::GetMaxnUC()
 {
-	int i, max = 0;
+    int i, max = 0;
 
-	// too early?
-	if (m_nvar == 0 || m_ntab == 0 || m_fname[0] == 0) {
-		*pVal =  -1;
-		return S_OK;
+    // too early?
+    if (m_nvar == 0 || m_ntab == 0 || m_fname[0] == 0) {
+	return -1;
+    }
+
+    for (i = 0; i < m_nUC; i++) {
+        if (m_UCList[i].nUC > max) {
+            max = m_UCList[i].nUC;
 	}
+    }
+    return max;
+}
 
+bool CMuArgCtrl::UnsafeVariable(long VarIndex, long *Count, long *UCArray)
+{
+    int ndim, i, j, nUnsafe, v = VarIndex - 1, counter;
+    bool tabsfound, varfound = false;
+
+    // Not the right moment, first call SetNumberVar
+    if (m_nvar == 0)  {
+	return false;
+    }
+    if (v < 0 || v >= m_nvar || !m_var[v].IsCategorical) {
+    	return false;
+    }
+    // There are tables generated?
+    if (m_ntab == 0) {
+	return false;
+    }
+
+    counter = 0;
+    for (ndim = 1; ndim < MAXDIM; ndim++) {
+        nUnsafe = 0;
+	tabsfound = false;
 	for (i = 0; i < m_nUC; i++) {
-		if (m_UCList[i].nUC > max) {
-			max = m_UCList[i].nUC;
+            if (!m_UCList[i].biggestThreshold) continue;  // = same variable combination with smaller threshold
+            int nTabDim = m_UCList[i].nDim;
+            if (nTabDim == ndim) {
+                for (j = 0; j < ndim; j++) {
+                    if (m_UCList[i].Varnr[j] == v) break;  // Variable in list?
 		}
-	}
-
-	*pVal = max;
-	return S_OK;
-}
-
-STDMETHODIMP CMuArgCtrl::UnsafeVariable(long VarIndex, long *Count, long *UCArray, VARIANT_BOOL *pVal)
-{
-	int ndim, i, j, nUnsafe, v = VarIndex - 1, counter;
-	bool tabsfound, varfound = false;
-
-	// Not the right moment, first call SetNumberVar
-	if (m_nvar == 0)  {
-		*pVal = VARIANT_FALSE;
-		return S_OK;;
-	}
-	if (v < 0 || v >= m_nvar || !m_var[v].IsCategorical) {
-	   *pVal = VARIANT_FALSE;
-		return S_OK;;
-	}
-	// There are tables generated?
-	if (m_ntab == 0) {
-	   *pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-
-	counter = 0;
-	for (ndim = 1; ndim < MAXDIM; ndim++) {
-		nUnsafe = 0;
-		tabsfound = false;
-		for (i = 0; i < m_nUC; i++) {
-			if (!m_UCList[i].biggestThreshold) continue;  // = same variable combination with smaller threshold
-			int nTabDim = m_UCList[i].nDim;
-				if (nTabDim == ndim) {
-					for (j = 0; j < ndim; j++) {
-						if (m_UCList[i].Varnr[j] == v) break;  // Variable in list?
-					}
-					if (j < ndim) {  // yes
-						varfound = true;
-						tabsfound = true;
-						nUnsafe += m_UCList[i].nUC;
-					}
-				}
-			}
-			if (tabsfound) {
-				UCArray[counter++] = nUnsafe;
-			}
-			else {
-				break;
-			}
+		if (j < ndim) {  // yes
+                    varfound = true;
+                    tabsfound = true;
+                    nUnsafe += m_UCList[i].nUC;
 		}
-
-		if (!varfound) {
-			*pVal = VARIANT_FALSE;
-			return S_OK;;  // Variable not present in any table
-		}
-
-	*Count = counter;
-
-   *pVal = VARIANT_TRUE;
-	return S_OK;
-
-}
-
-STDMETHODIMP CMuArgCtrl::UnsafeVariablePrepare(long VarIndex, long *nCode, VARIANT_BOOL *pVal)
-{
-	int v = VarIndex - 1;
-	int i, j, nCodes;
-	bool varfound;
-
-	// Not the right moment, first call SetNumberVar
-	if (m_nvar == 0)	{
-		*pVal = VARIANT_FALSE;
-		return S_OK;
+            }
 	}
-	// VarIndex correct?
-	if (v < 0 || v >= m_nvar || !m_var[v].IsCategorical) {
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-	// There are tables generated?
-	if (m_ntab == 0)	{
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-
-	// Variable in any table?
-	varfound = false;
-	for (i = 0; i < m_ntab && !varfound; i++) {
-		//if (m_tab[i].IsBIR) continue; // no subtables for BIR tables, or???
-		for (j = 0; j < m_tab[i].nDim && !varfound; j++) {
-			if (m_tab[i].Varnr[j] == v) {
-				varfound = true;
-			}
-		}
-	}
-
-	if (!varfound) {
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-
-	// Now try to find for variable 'v'
-	// for all dims and all codes of 'v' the unsafe combinations
-	// save results in m_unsafe[nCode][MAXDIM + 1]
-	CVariable *var;
-	var = &(m_var[v]);
-	nCodes = var->GetnCodes(true);
-
-	if (m_unsafe != 0) {
-		delete [] m_unsafe;
-		m_unsafe = 0;
-	}
-
-	m_unsafe = new int[nCodes][MAXDIM + 1];
-	if (m_unsafe == 0) {
-
-		// Not too sure about this
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-	memset(m_unsafe, 0, sizeof(int) * (MAXDIM  + 1) * nCodes);
-
-	m_maxdim = 0;
-	for (i = 0; i < m_nUC; i++) {
-		CUCList *ul = &(m_UCList[i]);
-		if (!ul->biggestThreshold) continue;
-			int n = ul->nDim;
-			for (j = 0; j < n; j++) {
-				if (ul->Varnr[j] == v) {
-					if (n == m_tab[ul->TabNr].nDim) { // basetable
-						ComputeUnsafeCells(m_tab[ul->TabNr], v);
-					}
-					else {
-						ComputeUnsafeCells(ul->table, v);
-					}
-					if (n > m_maxdim) {
-						m_maxdim = n;
-					}
-					break;
-				}
-			}
-		}
-	var = &(m_var[v]);
-	*nCode = var->GetnCodes(true);
-	*pVal = VARIANT_TRUE;
-	return S_OK;
-
-}
-
-
-
-
-
-STDMETHODIMP CMuArgCtrl::UnsafeVariableCodes(long VarIndex, long CodeIndex, long *IsMissing, long *Freq, BSTR *Code, long *Count, long *UCArray, VARIANT_BOOL *pVal)
-{
-	int v = VarIndex - 1;
-   int c = CodeIndex - 1;
-	int i, n;
-
-	// Not the right moment, first call SetNumberVar
-	if (m_nvar == 0) {
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-
-	// VarIndex correct?
-	if (v < 0 || v >= m_nvar || !m_var[v].IsCategorical) {
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-
-	// CodeIndex correct? Missing is also a valid code? Yes (AHNL 19-3-2001)
-	n = m_var[v].GetnCodes(true);
-	if (c < 0 || c >= n) {
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-
-	n = m_var[v].GetnCodes(false);
-   //*IsMissing = (c >= n);
-	if (c>= n) {
-		*IsMissing = 1;
+	if (tabsfound) {
+            UCArray[counter++] = nUnsafe;
 	}
 	else {
-		*IsMissing = 0;
+            break;
 	}
+    }
 
-	*Freq = m_unsafe[c][0]; // 'zero' dimension = freq
+    if (!varfound) {
+	return false;  // Variable not present in any table
+    }
 
-	if (m_var[v].HasRecode) {
-		*Code = m_var[v].Recode.sCode[c].AllocSysString();
-	}
-	else {
-		*Code = m_var[v].sCode[c].AllocSysString();
-	}
+    *Count = counter;
 
-	*Count = m_maxdim;
-
-	for (i = 1; i <= m_maxdim; i++) {
-		UCArray[i - 1] = m_unsafe[c][i];
-	}
-
-	*pVal = VARIANT_TRUE;
-	return S_OK;
+    return true;
 }
 
-STDMETHODIMP CMuArgCtrl::UnsafeVariableClose(long VarIndex, VARIANT_BOOL *pVal)
+bool CMuArgCtrl::UnsafeVariablePrepare(long VarIndex, long *nCode)
 {
-	int v = VarIndex - 1;
+    int v = VarIndex - 1;
+    int i, j, nCodes;
+    bool varfound;
 
-	// VarIndex correct?
-	if (v < 0 || v >= m_nvar || !m_var[v].IsCategorical) {
-		*pVal = VARIANT_FALSE;
-		return S_OK;
+    // Not the right moment, first call SetNumberVar
+    if (m_nvar == 0)	{
+	return false;
+    }
+    // VarIndex correct?
+    if (v < 0 || v >= m_nvar || !m_var[v].IsCategorical) {
+	return false;
+    }
+    // There are tables generated?
+    if (m_ntab == 0)	{
+        return false;
+    }
+
+    // Variable in any table?
+    varfound = false;
+    for (i = 0; i < m_ntab && !varfound; i++) {
+	//if (m_tab[i].IsBIR) continue; // no subtables for BIR tables, or???
+	for (j = 0; j < m_tab[i].nDim && !varfound; j++) {
+            if (m_tab[i].Varnr[j] == v) {
+                varfound = true;
+            }
 	}
+    }
 
-	if (m_unsafe != 0) {
-		delete [] m_unsafe;
-		m_unsafe = 0;
+    if (!varfound) {
+	return false;
+    }
+
+    // Now try to find for variable 'v'
+    // for all dims and all codes of 'v' the unsafe combinations
+    // save results in m_unsafe[nCode][MAXDIM + 1]
+    CVariable *var;
+    var = &(m_var[v]);
+    nCodes = var->GetnCodes(true);
+
+    if (m_unsafe != 0) {
+        delete [] m_unsafe;
+	m_unsafe = 0;
+    }
+
+    m_unsafe = new int[nCodes][MAXDIM + 1];
+    if (m_unsafe == 0) {
+	// Not too sure about this
+	return false;
+    }
+    memset(m_unsafe, 0, sizeof(int) * (MAXDIM  + 1) * nCodes);
+
+    m_maxdim = 0;
+    for (i = 0; i < m_nUC; i++) {
+        CUCList *ul = &(m_UCList[i]);
+	if (!ul->biggestThreshold) continue;
+	int n = ul->nDim;
+	for (j = 0; j < n; j++) {
+            if (ul->Varnr[j] == v) {
+                if (n == m_tab[ul->TabNr].nDim) { // basetable
+                    ComputeUnsafeCells(m_tab[ul->TabNr], v);
+		}
+                else {
+                    ComputeUnsafeCells(ul->table, v);
+		}
+		if (n > m_maxdim) {
+                    m_maxdim = n;
+		}
+		break;
+            }
 	}
-
-	*pVal = VARIANT_TRUE;
-	return S_OK;
-
+    }
+    var = &(m_var[v]);
+    *nCode = var->GetnCodes(true);
+    return true;
 }
 
-STDMETHODIMP CMuArgCtrl::DoRecode(long VarIndex, BSTR RecodeString,
-												 BSTR eMissing1, BSTR eMissing2, long *ErrorType,
-												 long *ErrorLine, long *ErrorPos, BSTR *WarningString,
-												 VARIANT_BOOL *pVal)
+bool CMuArgCtrl::UnsafeVariableCodes(long VarIndex, long CodeIndex, long *IsMissing, long *Freq, const char **Code, long *Count, long *UCArray)
 {
-	int i, v = VarIndex - 1, oke, maxwidth = 0;
-	*ErrorType = *ErrorLine = *ErrorPos = -1;
-	CString temp, Missing1, Missing2, sRecodeString;
+    int v = VarIndex - 1;
+    int c = CodeIndex - 1;
+    int i, n;
 
+    // Not the right moment, first call SetNumberVar
+    if (m_nvar == 0) {
+	return false;
+    }
 
-	Missing1 = eMissing1;
-	Missing2 = eMissing2;
-	sRecodeString = RecodeString;
-	// for warnings
-	m_nOverlap = 0;
-	m_nUntouched = 0;
-	m_nNoSense = 0;
+    // VarIndex correct?
+    if (v < 0 || v >= m_nvar || !m_var[v].IsCategorical) {
+	return false;
+    }
 
-	m_WarningRecode.Empty();
+    // CodeIndex correct? Missing is also a valid code? Yes (AHNL 19-3-2001)
+    n = m_var[v].GetnCodes(true);
+    if (c < 0 || c >= n) {
+	return false;
+    }
 
-	// too early?
-	if (m_nvar == 0 || m_ntab == 0 || m_fname[0] == 0) {
-		*ErrorType =  E_NOVARTABDATA;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
+    n = m_var[v].GetnCodes(false);
+    //*IsMissing = (c >= n);
+    if (c>= n) {
+        *IsMissing = 1;
+    }
+    else {
+        *IsMissing = 0;
+    }
 
-	// wrong VarIndex
-	if (v < 0 || v >= m_nvar || !m_var[v].IsCategorical) {
-		*ErrorType =  E_VARINDEXWRONG;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
+    *Freq = m_unsafe[c][0]; // 'zero' dimension = freq
 
-	if (m_var[v].HasRecode) {
-		m_var[v].UndoRecode();
-	}
+    if (m_var[v].HasRecode) {
+        *Code = m_var[v].Recode.sCode[c].c_str();
+    }
+    else {
+        *Code = m_var[v].sCode[c].c_str();
+    }
 
-	// only check syntax, phase = CHECK
-	oke = ParseRecodeString(v, sRecodeString, ErrorType, ErrorLine, ErrorPos, CHECK);
-	if (!oke) {
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
+    *Count = m_maxdim;
+    
+    for (i = 1; i <= m_maxdim; i++) {
+        UCArray[i - 1] = m_unsafe[c][i];
+    }
 
-	if (!m_var[v].PrepareRecode()) {
-		*ErrorType = NOTENOUGHMEMORY;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-	if (Missing1.IsEmpty() && !Missing2.IsEmpty()) {
-		Missing1 = Missing2;
-	}
-
-	// no missings for recode specified? Take the missing(s) of the source
-	if (Missing1.IsEmpty() && Missing2.IsEmpty()) {
-		Missing1 = m_var[v].Missing1;
-		if (m_var[v].nMissing == 2) {
-			Missing2, m_var[v].Missing2;
-		}
-		else {
-			Missing2 = Missing1;
-		}
-	}
-	ParseRecodeString(v, sRecodeString, ErrorType, ErrorLine, ErrorPos, DESTCODE);
-	if (m_var[v].Recode.sCode.GetSize() < 1) {
-		*ErrorType = E_EMPTYSPEC;
-		*ErrorLine = 1;
-		*ErrorPos = 1;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-
-	// sort list of dest codes, still without missing values (coming soon)
-	m_var[v].SortRecodedCode( 0, m_var[v].Recode.sCode.GetSize() - 1);
-
-
-	// now the number of codes is known, but not the not mentioned ones
-	// m_var[v].Recode.nCode = m_var[v].Recode.sCode.GetSize();
-
-	// again, now compute dest codes and link between dest and src
-	oke = ParseRecodeString(v, sRecodeString, ErrorType, ErrorLine, ErrorPos, SRCCODE);
-	if (!oke) {
-		*pVal = VARIANT_FALSE;
-		return S_OK;  // missing to valid codes, a terrible shame
-	}
-
-	// compute untouched codes, add them to the recode codelist
-	m_nUntouched = 0;
-	for (i = 0; i < m_var[v].nCode - m_var[v].nMissing; i++) {
-		if (m_var[v].Recode.DestCode[i] == -1) { // not touched
-			m_nUntouched++;
-			m_var[v].AddRecode((LPCTSTR) m_var[v].sCode[i]);
-		}
-	}
-	// make all recode codes same width
-	maxwidth = m_var[v].MakeRecodelistEqualWidth((LPCTSTR) Missing1, (LPCTSTR) Missing2);
-
-	// remove the missing codes, if present
-	{
-		int n;
-		bool IsMissing;
-		CString mis = Missing1;
-		AddSpacesBefore(mis, maxwidth);
-		if (n = m_var[v].FindRecodedCode(mis, 0, IsMissing), n >= 0) {
-			m_var[v].Recode.sCode.RemoveAt(n);
-		}
-		mis = Missing2;
-		AddSpacesBefore(mis, maxwidth);
-		if (n = m_var[v].FindRecodedCode(mis, 0, IsMissing), n >= 0) {
-			m_var[v].Recode.sCode.RemoveAt(n);
-		}
-	}
-	// sort list of dest codes, still without missing values (coming soon)
-	m_var[v].SortRecodedCode( 0, m_var[v].Recode.sCode.GetSize() - 1);
-
-	// ADD MISSING1 AND -2
-	// both empty impossible, see start of function
-	// swap missings if missing1 empty
-
-	if (Missing1.IsEmpty() && Missing2.IsEmpty()) {             // no missing specified?
-		m_var[v].Recode.Missing1 = m_var[v].Missing1;  // take the missing of source variable
-		m_var[v].Recode.Missing2 = m_var[v].Missing2;
-	}
-	else {
-		if (Missing1.IsEmpty()) {  // at least one missing specified
-			m_var[v].Recode.Missing1 = Missing2;
-			m_var[v].Recode.Missing2 = Missing1;
-		}
-		else {
-			m_var[v].Recode.Missing1 = Missing1;
-			m_var[v].Recode.Missing2 = Missing2;
-		}
-	}
-
-	// second empty?
-	if (m_var[v].Recode.Missing2.IsEmpty()) {
-		m_var[v].Recode.Missing2 = m_var[v].Recode.Missing1;
-		m_var[v].Recode.nMissing = 1;
-	}
-	else {
-		// equal?
-		if (m_var[v].Recode.Missing1 == m_var[v].Recode.Missing2) {
-			m_var[v].Recode.nMissing = 1;
-		}
-		else {
-			m_var[v].Recode.nMissing = 2;
-		}
-	}
-
-	// put in list, last one or two
-	AddSpacesBefore(m_var[v].Recode.Missing1, maxwidth);
-	m_var[v].AddRecode((LPCTSTR) m_var[v].Recode.Missing1);
-	if (m_var[v].Recode.nMissing == 2) {
-		AddSpacesBefore(m_var[v].Recode.Missing2, maxwidth);
-		m_var[v].AddRecode((LPCTSTR) m_var[v].Recode.Missing2);
-	}
-
-
-	// last time, now compute dest codes and link between dest and src
-	// for warnings
-	m_nOverlap = 0;
-	m_nNoSense = 0;
-	for (i = 0; i < m_var[v].nCode; i++) {
-		m_var[v].Recode.DestCode[i] = -1;
-	}
-	oke = ParseRecodeString(v, sRecodeString, ErrorType, ErrorLine, ErrorPos, SRCCODE);
-	if (!oke) {
-		*pVal = VARIANT_FALSE;
-		return S_OK;  // missing to valid codes, a terrible shame
-	}
-
-	// yep, the number of codes is known and the codes are sorted (except one or two MISSINGs at the end of te list)
-	m_var[v].Recode.nCode = m_var[v].Recode.sCode.GetSize();
-
-	// do the same for MISSINGS, more complicated
-	{ //RECODE *c = &(m_var[v].Recode); // for easier reference
-
-		i = m_var[v].nCode - m_var[v].nMissing;     // first missing
-		if (m_var[v].Recode.DestCode[i] == -1) {                 // missing 1 not specified
-			m_var[v].Recode.DestCode[i] = m_var[v].Recode.nCode - m_var[v].Recode.nMissing;  // make missing1 equal to missing1 source
-		}
-		if (m_var[v].nMissing == 2) {               // two missings in source?
-			i++;
-			if (m_var[v].Recode.nMissing == 2) {                   // two missings in dest?
-				if (m_var[v].Recode.DestCode[i] == -1) {                     // missing 2 not specified
-					m_var[v].Recode.DestCode[i] = m_var[v].Recode.nCode - m_var[v].Recode.nMissing + 1;  // make missing2 equal to missing2 source
-				}
-			}
-			else {
-				if (m_var[v].Recode.DestCode[i] == -1) {                 // missing 2 not specified
-					m_var[v].Recode.DestCode[i] = m_var[v].Recode.nCode - m_var[v].Recode.nMissing;  // make missing2 equal to missing1 source
-				}
-			}
-		}
-	}
-
-	// set untouched codes on right index
-  { //RECODE *c = &(m_var[v].Recode); // for easier reference
-		bool IsMissing;
-		int index, ncode = m_var[v].nCode - m_var[v].nMissing;
-		for (i = 0; i < ncode; i++) {
-			if (m_var[v].Recode.DestCode[i] == -1) {
-				CString str = m_var[v].sCode[i];
-				AddSpacesBefore(str, m_var[v].Recode.CodeWidth);
-				//index = BinSearchStringArray(c->sCode, str, c->nMissing, IsMissing);
-				index = m_var[v].FindRecodedCode(str, m_var[v].Recode.nMissing, IsMissing);
-				ASSERT(index >= 0 && index < m_var[v].Recode.nCode);
-				m_var[v].Recode.DestCode[i] = index;
-			}
-		}
-	}
-
-	// WARNINGS in recode:
-
-	// show untouched codes:
-	if (m_nUntouched > 0) {
-		CString temp;
-		temp.Format("Number of untouched codes: %d\r\n", m_nUntouched);
-		m_WarningRecode += temp;
-	}
-
-	// show warnings
-	if (m_nOverlap > 0) {
-		temp.Format("Number of overlapping codes: %d\r\n", m_nOverlap);
-		m_WarningRecode += temp;
-	}
-
-	if (m_nNoSense > 0) {
-		temp.Format("Number of \"no sense\" codes: %d\r\n", m_nNoSense);
-		m_WarningRecode += temp;
-	}
-
-	if (m_WarningRecode.IsEmpty() ) {
-		m_WarningRecode = "Recode OK";
-	}
-
-	*WarningString = m_WarningRecode.AllocSysString();
-
-	m_var[v].HasRecode = true;
-
-	*pVal = VARIANT_TRUE;
-	return S_OK;
+    return true;
 }
 
+bool CMuArgCtrl::UnsafeVariableClose(long VarIndex)
+{
+    int v = VarIndex - 1;
 
+    // VarIndex correct?
+    if (v < 0 || v >= m_nvar || !m_var[v].IsCategorical) {
+	return false;
+    }
+
+    if (m_unsafe != 0) {
+        delete [] m_unsafe;
+	m_unsafe = 0;
+    }
+
+    return true;
+}
+
+bool CMuArgCtrl::DoRecode(long VarIndex, std::string RecodeString, std::string eMissing1, std::string eMissing2, long *ErrorType, long *ErrorLine, long *ErrorPos, std::string *WarningString)
+{
+    int i, v = VarIndex - 1, oke, maxwidth = 0;
+    *ErrorType = *ErrorLine = *ErrorPos = -1;
+    std::string temp, Missing1, Missing2, sRecodeString;
+
+    Missing1 = eMissing1;
+    Missing2 = eMissing2;
+    sRecodeString = RecodeString;
+    // for warnings
+    m_nOverlap = 0;
+    m_nUntouched = 0;
+    m_nNoSense = 0;
+
+    m_WarningRecode.empty();
+
+    // too early?
+    if (m_nvar == 0 || m_ntab == 0 || m_fname[0] == 0) {
+    	*ErrorType =  E_NOVARTABDATA;
+	return false;
+    }
+
+    // wrong VarIndex
+    if (v < 0 || v >= m_nvar || !m_var[v].IsCategorical) {
+	*ErrorType =  E_VARINDEXWRONG;
+	return false;
+    }
+
+    if (m_var[v].HasRecode) {
+    	m_var[v].UndoRecode();
+    }
+
+    // only check syntax, phase = CHECK
+    oke = ParseRecodeString(v, sRecodeString, ErrorType, ErrorLine, ErrorPos, CHECK);
+    if (!oke) {
+	return false;
+    }
+
+    if (!m_var[v].PrepareRecode()) {
+	*ErrorType = NOTENOUGHMEMORY;
+	return false;
+    }
+    if (Missing1.empty() && !Missing2.empty()) {
+	Missing1 = Missing2;
+    }
+
+    // no missings for recode specified? Take the missing(s) of the source
+    if (Missing1.empty() && Missing2.empty()) {
+	Missing1 = m_var[v].Missing1;
+	if (m_var[v].nMissing == 2) {
+            Missing2, m_var[v].Missing2;
+	}
+	else {
+            Missing2 = Missing1;
+	}
+    }
+    ParseRecodeString(v, sRecodeString, ErrorType, ErrorLine, ErrorPos, DESTCODE);
+    if (m_var[v].Recode.sCode.size() < 1) {
+	*ErrorType = E_EMPTYSPEC;
+	*ErrorLine = 1;
+	*ErrorPos = 1;
+	return false;
+    }
+
+    // sort list of dest codes, still without missing values (coming soon)
+    m_var[v].SortRecodedCode( 0, m_var[v].Recode.sCode.size() - 1);
+
+    // now the number of codes is known, but not the not mentioned ones
+    // m_var[v].Recode.nCode = m_var[v].Recode.sCode.GetSize();
+    // again, now compute dest codes and link between dest and src
+    oke = ParseRecodeString(v, sRecodeString, ErrorType, ErrorLine, ErrorPos, SRCCODE);
+    if (!oke) {
+	return false;  // missing to valid codes, a terrible shame
+    }
+
+    // compute untouched codes, add them to the recode codelist
+    m_nUntouched = 0;
+    for (i = 0; i < m_var[v].nCode - m_var[v].nMissing; i++) {
+	if (m_var[v].Recode.DestCode[i] == -1) { // not touched
+            m_nUntouched++;
+            m_var[v].AddRecode(m_var[v].sCode[i].c_str());
+	}
+    }
+    // make all recode codes same width
+    maxwidth = m_var[v].MakeRecodelistEqualWidth(Missing1, Missing2);
+
+    // remove the missing codes, if present
+    {
+	int n;
+	bool IsMissing;
+	std::string mis = Missing1;
+	AddSpacesBefore(mis, maxwidth);
+	if (n = m_var[v].FindRecodedCode(mis, 0, IsMissing), n >= 0) {
+            //m_var[v].Recode.sCode.RemoveAt(n);
+            m_var[v].Recode.sCode.erase(m_var[v].Recode.sCode.begin() + n);
+	}
+	mis = Missing2;
+	AddSpacesBefore(mis, maxwidth);
+	if (n = m_var[v].FindRecodedCode(mis, 0, IsMissing), n >= 0) {
+            //m_var[v].Recode.sCode.RemoveAt(n);
+            m_var[v].Recode.sCode.erase(m_var[v].Recode.sCode.begin() + n);
+	}
+    }
+    // sort list of dest codes, still without missing values (coming soon)
+    m_var[v].SortRecodedCode( 0, m_var[v].Recode.sCode.size() - 1);
+
+    // ADD MISSING1 AND -2
+    // both empty impossible, see start of function
+    // swap missings if missing1 empty
+
+    if (Missing1.empty() && Missing2.empty()) {             // no missing specified?
+	m_var[v].Recode.Missing1 = m_var[v].Missing1;  // take the missing of source variable
+	m_var[v].Recode.Missing2 = m_var[v].Missing2;
+    }
+    else {
+        if (Missing1.empty()) {  // at least one missing specified
+            m_var[v].Recode.Missing1 = Missing2;
+            m_var[v].Recode.Missing2 = Missing1;
+	}
+	else {
+            m_var[v].Recode.Missing1 = Missing1;
+            m_var[v].Recode.Missing2 = Missing2;
+	}
+    }
+
+    // second empty?
+    if (m_var[v].Recode.Missing2.empty()) {
+        m_var[v].Recode.Missing2 = m_var[v].Recode.Missing1;
+	m_var[v].Recode.nMissing = 1;
+    }
+    else {
+	// equal?
+        if (m_var[v].Recode.Missing1 == m_var[v].Recode.Missing2) {
+            m_var[v].Recode.nMissing = 1;
+	}
+	else {
+            m_var[v].Recode.nMissing = 2;
+	}
+    }
+
+    // put in list, last one or two
+    AddSpacesBefore(m_var[v].Recode.Missing1, maxwidth);
+    m_var[v].AddRecode(m_var[v].Recode.Missing1.c_str());
+    if (m_var[v].Recode.nMissing == 2) {
+        AddSpacesBefore(m_var[v].Recode.Missing2, maxwidth);
+	m_var[v].AddRecode(m_var[v].Recode.Missing2.c_str());
+    }
+
+    // last time, now compute dest codes and link between dest and src
+    // for warnings
+    m_nOverlap = 0;
+    m_nNoSense = 0;
+    for (i = 0; i < m_var[v].nCode; i++) {
+        m_var[v].Recode.DestCode[i] = -1;
+    }
+    oke = ParseRecodeString(v, sRecodeString, ErrorType, ErrorLine, ErrorPos, SRCCODE);
+    if (!oke) {
+    	return false;  // missing to valid codes, a terrible shame
+    }
+
+    // yep, the number of codes is known and the codes are sorted (except one or two MISSINGs at the end of te list)
+    m_var[v].Recode.nCode = m_var[v].Recode.sCode.size();
+
+    // do the same for MISSINGS, more complicated
+    { //RECODE *c = &(m_var[v].Recode); // for easier reference
+        i = m_var[v].nCode - m_var[v].nMissing;     // first missing
+	if (m_var[v].Recode.DestCode[i] == -1) {                 // missing 1 not specified
+            m_var[v].Recode.DestCode[i] = m_var[v].Recode.nCode - m_var[v].Recode.nMissing;  // make missing1 equal to missing1 source
+	}
+	if (m_var[v].nMissing == 2) {               // two missings in source?
+            i++;
+            if (m_var[v].Recode.nMissing == 2) {                   // two missings in dest?
+                if (m_var[v].Recode.DestCode[i] == -1) {                     // missing 2 not specified
+                    m_var[v].Recode.DestCode[i] = m_var[v].Recode.nCode - m_var[v].Recode.nMissing + 1;  // make missing2 equal to missing2 source
+		}
+            }
+            else {
+                if (m_var[v].Recode.DestCode[i] == -1) {                 // missing 2 not specified
+                    m_var[v].Recode.DestCode[i] = m_var[v].Recode.nCode - m_var[v].Recode.nMissing;  // make missing2 equal to missing1 source
+		}
+            }
+	}
+    }
+
+    // set untouched codes on right index
+    { //RECODE *c = &(m_var[v].Recode); // for easier reference
+        bool IsMissing;
+	int index, ncode = m_var[v].nCode - m_var[v].nMissing;
+	for (i = 0; i < ncode; i++) {
+            if (m_var[v].Recode.DestCode[i] == -1) {
+                std::string str = m_var[v].sCode[i];
+		AddSpacesBefore(str, m_var[v].Recode.CodeWidth);
+		//index = BinSearchStringArray(c->sCode, str, c->nMissing, IsMissing);
+		index = m_var[v].FindRecodedCode(str, m_var[v].Recode.nMissing, IsMissing);
+		assert(index >= 0 && index < m_var[v].Recode.nCode);
+		m_var[v].Recode.DestCode[i] = index;
+            }
+	}
+    }
+
+    // WARNINGS in recode:
+
+    // show untouched codes:
+    std::ostringstream ss;
+    if (m_nUntouched > 0) {
+        ss << "Number of untouched codes: " << m_nUntouched << "\r\n";
+    }
+
+    // show warnings
+    if (m_nOverlap > 0) {
+        ss << "Number of overlapping codes: " << m_nOverlap << "\r\n";
+	m_WarningRecode += temp;
+    }
+
+    if (m_nNoSense > 0) {
+        ss << "Number of \"no sense\" codes: " << m_nNoSense << "\r\n";
+    }
+    m_WarningRecode = ss.str();
+    
+    if (m_WarningRecode.empty() ) {
+        m_WarningRecode = "Recode OK";
+    }
+
+    *WarningString = m_WarningRecode.c_str();
+    //*WarningString = m_WarningRecode.AllocSysString();
+
+    m_var[v].HasRecode = true;
+
+    return true;
+}
 
 ////////////////////////////////////////////////////////////////////////////
 /// PARSE RECODE LIST
@@ -2115,7 +2012,7 @@ int CMuArgCtrl::SetCode2Recode(int VarIndex, char *DestCode,
 		}
 		break;
 	default:
-		ASSERT(1 == 2);
+		assert(1 == 2);
 		return PROGRAMERROR;
 	}
 
@@ -2124,10 +2021,10 @@ int CMuArgCtrl::SetCode2Recode(int VarIndex, char *DestCode,
 		return R_NOSENSE;
 	}
 	// c1 and c2 now are correct, I assume
-	ASSERT(c1 >= 0 && c1 < v->sCode.GetSize() && c2 >= c1 && c2 < v->sCode.GetSize());
+	assert(c1 >= 0 && c1 < v->sCode.GetSize() && c2 >= c1 && c2 < v->sCode.GetSize());
 
 	// search destcode in list
-	ASSERT(v->nMissing > 0 && v->nMissing < 3);
+	assert(v->nMissing > 0 && v->nMissing < 3);
 
 	AddSpacesBefore(DestCode, v->Recode.CodeWidth);
 	DestIndex = v->FindRecodedCode(DestCode, v->Recode.nMissing, DestMissing);
@@ -2137,7 +2034,7 @@ int CMuArgCtrl::SetCode2Recode(int VarIndex, char *DestCode,
 		return R_MISSING2VALID;
 	}
 
-	ASSERT(DestIndex >= 0 && DestIndex < v->Recode.sCode.GetSize() );
+	assert(DestIndex >= 0 && DestIndex < v->Recode.sCode.GetSize() );
 	if (DestIndex < 0 || DestIndex >= v->Recode.sCode.GetSize() ) {
 		return PROGRAMERROR;
 	}
@@ -2348,7 +2245,7 @@ STDMETHODIMP CMuArgCtrl::DoTruncate(long VarIndex, long nPos, VARIANT_BOOL *pVal
 	for (i = 0; i < nCode; i++) {
 		newcode = m_var[v].sCode[i].Left(NewWidth);
 		int n = m_var[v].AddRecode(newcode);
-		ASSERT(n >= 0 && n < m_var[v].nCode);
+		assert(n >= 0 && n < m_var[v].nCode);
 		m_var[v].Recode.DestCode[i] = n;
 	}
 
@@ -2444,8 +2341,8 @@ void CMuArgCtrl::ComputeRecodeTableCells(CTable & srctab, CTable & dsttab,
 	int i, desti, nDim = srctab.nDim;
 
 	if (niv == nDim) {
-		ASSERT(iCellSrc >= 0 && iCellSrc < srctab.nCell);
-		ASSERT(iCellDst >= 0 && iCellDst < dsttab.nCell);
+		assert(iCellSrc >= 0 && iCellSrc < srctab.nCell);
+		assert(iCellDst >= 0 && iCellDst < dsttab.nCell);
 		if (iCellDst == 4088)	{
 			long Ramya = 0;
 		}
@@ -2465,7 +2362,7 @@ void CMuArgCtrl::ComputeRecodeTableCells(CTable & srctab, CTable & dsttab,
 	for (i = 0; i < n; i++) {
 		if (HasRecode) {
 			desti = m_var[iVar].Recode.DestCode[i];
-			ASSERT(desti >= 0 && desti < m_var[iVar].Recode.nCode);
+			assert(desti >= 0 && desti < m_var[iVar].Recode.nCode);
 		}
 		else {
 			desti = i;
@@ -3242,7 +3139,7 @@ BOOL CMuArgCtrl::AddMissingTable(CTable & t, int niv, int *DimNr,
 		if (freq > 0) {
 			AddMissing(t, DimNr, freq, weight, HasMissing); // all corresponding Missing(s) are added
 			BaseIndividualRisk(freq, weight, &v, &temp);
-			ASSERT(temp);
+			assert(temp);
 
 			if (v != 0) {
 	  		// take log of it
@@ -3253,10 +3150,10 @@ BOOL CMuArgCtrl::AddMissingTable(CTable & t, int niv, int *DimNr,
 						if (Logv < t.BIRMinValue) t.BIRMinValue = Logv;
 						break;
 					case BIR_FREQ:
-						ASSERT(Logv <= t.BIRMaxValue && Logv >= t.BIRMinValue);
+						assert(Logv <= t.BIRMaxValue && Logv >= t.BIRMinValue);
 						{ int ci = (int) ((Logv - t.BIRMinValue) / t.BIRClassWidth);
 							if (ci == t.BIRnClasses) ci--;  // can happen in rare cases, due to rounding
-							ASSERT(ci >= 0 && ci < t.BIRnClasses);
+							assert(ci >= 0 && ci < t.BIRnClasses);
 							Frequency[ci] += freq;
 						}
 						// hier tellen voor de Re-indent.rate
@@ -3333,7 +3230,7 @@ int CMuArgCtrl::AddMissing(const CTable& tab, int *DimNr, long& freq,
 
 		if (vi == 0) return false; // all variables on Missing
 
-		ASSERT(vi > 0 && vi < tab.nDim);
+		assert(vi > 0 && vi < tab.nDim);
 
 		// now find table with this variables, table has vi dimensions
 		t.nDim = 0;
@@ -3349,7 +3246,7 @@ int CMuArgCtrl::AddMissing(const CTable& tab, int *DimNr, long& freq,
 					break;
 				}
 			}
-			ASSERT(t.nDim > 0);
+			assert(t.nDim > 0);
 		}
 
 		nDim = t.nDim;
@@ -3378,7 +3275,7 @@ int CMuArgCtrl::AddMissing(const CTable& tab, int *DimNr, long& freq,
 						for (d = 0; d < tab.nDim; d++) {
 							if (vars[k] == tab.Varnr[d]) break;
 						}
-						ASSERT(d < tab.nDim);
+						assert(d < tab.nDim);
 						dimnr[k] = DimNr[d];  // take valid code subtable
 					}
 					else {
@@ -3387,7 +3284,7 @@ int CMuArgCtrl::AddMissing(const CTable& tab, int *DimNr, long& freq,
 					nMissing[k] = 0;
 				}
 			}
-			ASSERT(dimnr[0] >= 0);
+			assert(dimnr[0] >= 0);
 			AddMissingCells(t, dimnr, nMissing, freq, weight);
 	}
 	return true;
@@ -3559,7 +3456,7 @@ STDMETHODIMP CMuArgCtrl::MakeFileSafe(BSTR FileName, VARIANT_BOOL WithPrior,
 		while (1) {
 
       if (ReadCode = ReadMicroRecord(fd_in, str), ReadCode != INFILE_OKE) {
-			ASSERT(ReadCode != INFILE_ERROR);
+			assert(ReadCode != INFILE_ERROR);
 			break;  // error (should not be possible) or eof
       }
       recnr++;
@@ -3598,7 +3495,7 @@ STDMETHODIMP CMuArgCtrl::MakeFileSafe(BSTR FileName, VARIANT_BOOL WithPrior,
 		while (1) {
 			RecPos = ftell(fd_in);
 			if (ReadCode = ReadMicroRecord(fd_in, str), ReadCode != INFILE_OKE) {
-				ASSERT(ReadCode != INFILE_ERROR);
+				assert(ReadCode != INFILE_ERROR);
 				if (ReadCode == INFILE_ERROR) {
 					break;  // error, should not be possible
 				}
@@ -3643,7 +3540,7 @@ STDMETHODIMP CMuArgCtrl::MakeFileSafe(BSTR FileName, VARIANT_BOOL WithPrior,
 				long cpos = ftell(fd_in);
 				fseek(fd_in, StartHHPos, SEEK_SET);
 				nRecHH = ComputeRecHH(fd_in, bPos, nPos);
-				ASSERT(nRecHH > 0);
+				assert(nRecHH > 0);
 				fseek(fd_in, cpos, SEEK_SET);
 				FirstRecHH = false;
 			}
@@ -3718,7 +3615,7 @@ bool CMuArgCtrl::MakeRecordDescription(long HHIdentOption)
 			strcpy(str, (LPCTSTR) s);
 			bp = atoi(&str[0]);
 			np = atoi(&str[6]);
-			ASSERT(bp >= pos);
+			assert(bp >= pos);
 			if (bp < pos) {
 				return false;  // overlapping fields
 			}
@@ -3805,7 +3702,7 @@ bool CMuArgCtrl::MakeRecordDescription(long HHIdentOption)
 	}
 	fprintf(fd, "%5d %5d \n", m_SafeRecordLength, v);
    fclose (fd);
-#endif _DEBUG
+#endif //_DEBUG
 	return true;
 }
 
@@ -3839,7 +3736,7 @@ void CMuArgCtrl::QuickSortStringArray(CStringArray &s, int first, int last)
 { int i, j;
   CString mid, temp;
 
-  ASSERT(first >= 0 && last >= first);
+  assert(first >= 0 && last >= first);
 
   do {
     i = first;
@@ -3907,7 +3804,7 @@ BOOL CMuArgCtrl::DoEntropy(long VarNr, double& Entropy)
 			}
 		}
 
-		ASSERT(N > 0);
+		assert(N > 0);
 
 		if (N < 1) return true; // all codes are on missing, apparently
 
@@ -4073,7 +3970,7 @@ BOOL CMuArgCtrl::MakeRecordSafe(UCHAR *record, int fase, int recnr, int nRecHH, 
 		if (!var->IsCategorical) continue;
 
 		ComputeTableIndex(record, var, v);
-		ASSERT(var->TableIndex >= 0);
+		assert(var->TableIndex >= 0);
 		if (var->TableIndex < 0) {
 		return false;   // program error
 		}
@@ -4133,11 +4030,11 @@ int CMuArgCtrl::ComputeRecordUC(long HHNum)
 			}
 		}
 
-		ASSERT(CellNr >= 0 && CellNr < t.nCell);
+		assert(CellNr >= 0 && CellNr < t.nCell);
 
 		// Cell unsafe?
 		if (t.IsBIR) {
-			ASSERT(t.GetCellNr(DimNr) == CellNr);  // DimNr correct?
+			assert(t.GetCellNr(DimNr) == CellNr);  // DimNr correct?
 			long freq = t.Cell[CellNr];
 			double weight, v, logv;
 			VARIANT_BOOL temp;
@@ -4145,7 +4042,7 @@ int CMuArgCtrl::ComputeRecordUC(long HHNum)
 				// returns false if all variables on Missing
 				if (AddMissing(t, DimNr, freq, weight, HasMissing) ) { // all corresponding Missing(s) are added
 					BaseIndividualRisk(freq, weight, &v, &temp);
-					ASSERT(temp);
+					assert(temp);
 					//Check the BIR first
 					if (v != 0) {
 						logv = log(v);
@@ -4205,8 +4102,8 @@ void CMuArgCtrl::SetVarMissing(int iVar)
 {
 	int i;
 
-	ASSERT(iVar >= 0 && iVar < m_nvar);
-	ASSERT(m_var[iVar].IsCategorical);
+	assert(iVar >= 0 && iVar < m_nvar);
+	assert(m_var[iVar].IsCategorical);
 
 	m_var[iVar].SetMissing = true;
 	if (m_var[iVar].RelatedTo >= 0) {
@@ -4289,7 +4186,7 @@ double CMuArgCtrl::SetFreqMissings(CUIntArray& FreqMissing, int nRecHH)
 					}
 				}
 			}
-			ASSERT(ni >= 0 && ni < m_nvar);
+			assert(ni >= 0 && ni < m_nvar);
 			SetVarMissing(ni);
 			FreqMissing.Add(ni);
 			if (m_WithPriority) {
@@ -4350,7 +4247,7 @@ double CMuArgCtrl::SetMinMissings(CUIntArray& MinMissing, int nRecHH)
 		}
 		if (nUnsafeTab == 0) break;
 	}
-	ASSERT(ndim < MAXDIM);
+	assert(ndim < MAXDIM);
 
 	return score;
 }
@@ -4462,7 +4359,7 @@ BOOL CMuArgCtrl::WriteRecord(FILE *fd_out, UCHAR *record, long HHIdentOption,
 			}
 			//else
 			else {
-			ASSERT(v->d_npos >= 0);
+			assert(v->d_npos >= 0);
 			if(v->d_npos == 0) continue;
 
 			iVar = v->VarIndex;
@@ -4524,7 +4421,7 @@ BOOL CMuArgCtrl::WriteRecord(FILE *fd_out, UCHAR *record, long HHIdentOption,
 				}
 
 				if (var->HasRecode) {
-					ASSERT(iCode >= 0 && iCode < var->Recode.nCode - var->Recode.nMissing);
+					assert(iCode >= 0 && iCode < var->Recode.nCode - var->Recode.nMissing);
 					if (m_OutFileIsFixedFormat) {
 						strncpy(&str[v->d_bpos], (LPCTSTR) var->Recode.sCode[iCode], v->d_npos);
 					}
@@ -4536,7 +4433,7 @@ BOOL CMuArgCtrl::WriteRecord(FILE *fd_out, UCHAR *record, long HHIdentOption,
 						OutString = OutString + m_OutFileSeperator + TempString;
 					}
 				} else {
-					ASSERT(iCode >= 0 && iCode < var->nCode - var->nMissing);
+					assert(iCode >= 0 && iCode < var->nCode - var->nMissing);
 					if (m_OutFileIsFixedFormat) {
 						strncpy(&str[v->d_bpos], (LPCTSTR) var->sCode[iCode], v->d_npos);
 					}
@@ -4627,7 +4524,7 @@ BOOL CMuArgCtrl::WriteRecord(FILE *fd_out, UCHAR *record, long HHIdentOption,
 
 
             // put code in output record
-            ASSERT(strlen(code) <= (unsigned) v->d_npos);
+            assert(strlen(code) <= (unsigned) v->d_npos);
             AddSpacesBefore(code, v->d_npos);
 				if (m_OutFileIsFixedFormat) {
 					memcpy(&str[v->d_bpos], code, v->d_npos);
@@ -4670,7 +4567,7 @@ BOOL CMuArgCtrl::WriteRecord(FILE *fd_out, UCHAR *record, long HHIdentOption,
       }
 		else {
         int t = var->TableIndex;
-        ASSERT(t >= 0 && t < var->Recode.nCode);
+        assert(t >= 0 && t < var->Recode.nCode);
 		  if (m_OutFileIsFixedFormat) {
 				memcpy(&str[v->d_bpos],(LPCTSTR) var->Recode.sCode[t], v->d_npos);
 		  }
@@ -4691,7 +4588,7 @@ BOOL CMuArgCtrl::WriteRecord(FILE *fd_out, UCHAR *record, long HHIdentOption,
 		OutString.TrimRight();
 	}
 
-  //ASSERT(v->d_bpos + v->d_npos == m_SafeRecordLength);
+  //assert(v->d_bpos + v->d_npos == m_SafeRecordLength);
   }
 // for test
 
@@ -5132,12 +5029,12 @@ bool CMuArgCtrl::FindBIRForRec( UCHAR *record, double *BIRarray)
 				}
 			}
 
-			ASSERT(t.GetCellNr(DimNr) == CellNr);
+			assert(t.GetCellNr(DimNr) == CellNr);
 			freq = t.Cell[CellNr];
 			if (freq >0 ) {
 				if (AddMissing(t,DimNr,freq,weight, HasMissing)) {
 					BaseIndividualRisk(freq,weight,&v, &temp);
-					ASSERT(temp);
+					assert(temp);
 
 					// Not sure if v has to be added to the array or log v
 					BIRarray[bircounter] = v; // log v
@@ -5175,7 +5072,7 @@ void CMuArgCtrl::ComputeTableBIR(CTable &t, int& BIRFreq, double& BIRWeight, dou
 		// returns false if all variables on Missing
 		if (AddMissing(t, DimNr, freq, weight, HasMissing) ) { // all corresponding Missing(s) are added
 			BaseIndividualRisk(freq, weight, &v, &temp);
-			ASSERT(temp);
+			assert(temp);
       BIRFreq = freq;
 			BIRWeight = weight;
       BIR = v;
@@ -5280,7 +5177,7 @@ STDMETHODIMP CMuArgCtrl::GetBHRHistogramData(long TableIndex, long nClasses,
 	for (i=0; i<m_lNumberOfHH; i++)	{
 		ci = (int) ((log(m_HH[i].m_dBHR[BIRCounter]) - t->BHRMinValue) / t->BHRClassWidth);
 		if (ci == t->BHRnClasses) ci--;  // can happen in rare cases, due to rounding
-		//ASSERT(ci >= 0 && ci < t.BIRnClasses);
+		//assert(ci >= 0 && ci < t.BIRnClasses);
 		HHFrequency[ci] = HHFrequency[ci] +1;
 		RecFrequency[ci] = RecFrequency[ci] + m_HH[i].m_lNumberofMembers;
 
@@ -5295,7 +5192,7 @@ STDMETHODIMP CMuArgCtrl::GetBHRHistogramData(long TableIndex, long nClasses,
 void CMuArgCtrl::QuickSortDoubleArray(double * d, int first, int last)
 { int i, j;
   double mid, temp;
-  ASSERT(first >= 0 && last >= first);
+  assert(first >= 0 && last >= first);
 
   do {
     i = first;
@@ -5530,13 +5427,13 @@ bool CMuArgCtrl::FillBIRArray(CTable &tab, double *BIRarray, UCHAR *record)
 				HasMissing = true;
 		}
 	}
-	ASSERT(tab.GetCellNr(DimNr) == CellNr);
+	assert(tab.GetCellNr(DimNr) == CellNr);
 	VARIANT_BOOL temp;
 	freq = tab.Cell[CellNr];
 	if (freq >0 ) {
 		if (AddMissing(tab,DimNr,freq,weight, HasMissing)) {
 			BaseIndividualRisk(freq,weight,&v, &temp);
-			ASSERT(temp);
+			assert(temp);
 			BIRarray[CellNr] = v;
 		}
 	}
@@ -5550,7 +5447,7 @@ void CMuArgCtrl::QuickSortBIRFreqArray(double * BIR, long *Freq, int first, int 
 	int i, j;
 	double mid, BIRtemp;
 	long Freqtemp;
-	ASSERT(first >= 0 && last >= first);
+	assert(first >= 0 && last >= first);
 
 	do {
 		i = first;
