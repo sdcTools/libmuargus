@@ -174,11 +174,11 @@ private:
 	void ComputeRecodeTableCells(CTable & srctab, CTable & dsttab, int niv, int iCellSrc, int iCellDst);
 
 	int  SetCode2Recode(int VarIndex, char *DestCode,char *SrcCode1, char *SrcCode2, int fromto);
-	//bool ParseRecodeString(long VarIndex, std::string RecodeString, long FAR* ErrorType, long FAR* ErrorLine, long FAR* ErrorPos, int Phase);
-        bool ParseRecodeString(long VarIndex, std::string RecodeString, long *ErrorType, long *ErrorLine, long *ErrorPos, int Phase);
-	//bool ParseRecodeStringLine(long VarIndex, std::string str, long FAR* ErrorType, long FAR* ErrorPos, int Phase);
-        bool ParseRecodeStringLine(long VarIndex, std::string str, long *ErrorType, long *ErrorPos, int Phase);
-	int  ReadWord(std::string str, char* CodeFrom, char *CodeTo, char EndCode, int& fromto, int& pos);
+	bool ParseRecodeString(long VarIndex, const char *RecodeString, long *ErrorType, long *ErrorLine, long *ErrorPos, int Phase);
+        //bool ParseRecodeString(long VarIndex, std::string RecodeString, long *ErrorType, long *ErrorLine, long *ErrorPos, int Phase);
+	bool ParseRecodeStringLine(long VarIndex, const char *str, long *ErrorType, long *ErrorPos, int Phase);
+        //bool ParseRecodeStringLine(long VarIndex, std::string str, long *ErrorType, long *ErrorPos, int Phase);
+	int  ReadWord(const char *str, char* CodeFrom, char *CodeTo, char EndCode, int& fromto, int& pos);
 
 	bool WriteVariablesFromMicroRecord(char *str, FILE *fdout, long *VarIndexes,long nVar, std::string seperator);
 
@@ -232,7 +232,7 @@ public:
 	bool SetRound(/*[in]*/ long VarIndex, /*[in]*/ double RoundBase, /*[in]*/ long nDec, /*[in]*/ bool Undo);
 	bool SetChangeFile(/*[in]*/ long FileIndex, /*[in]*/ std::string FileName, /*[in]*/ long nVar, /*[in,out]*/ long *VarIndex, /*[in]*/ std::string FileSeperator);
 	bool GetVarProperties(/*[in]*/ long VarIndex, /*[in,out]*/ long *StartPos, /*[in,out]*/ long *nPos, /*[in,out]*/ long *nSuppress, /*[in,out]*/ double *Entropy, /*[in,out]*/ long *BandWidth,/*[in,out]*/  std::string *Missing1,/*[in,out]*/  std::string *Missing2, /*[in,out]*/ long *NofCodes, /*[in,out]*/ long *NofMissing);
-	bool GetVarCode(/*[in]*/ long VarIndex, /*[in]*/ long CodeIndex, /*[in,out]*/ std::string *Code, /*[in,out]*/ long *PramPerc);
+	bool GetVarCode(/*[in]*/ long VarIndex, /*[in]*/ long CodeIndex, /*[in,out]*/ const char **Code, /*[in,out]*/ long *PramPerc);
 	bool GetTableUC(/*[in]*/ long nDim, /*[in]*/ long Index,/*[in,out]*/ bool *BaseTable,/*[in,out]*/ long *nUC, /*[in,out]*/ long *VarList);
 	bool SetPramValue(/*[in]*/ long CodeIndex, /*[in]*/ long Value);
 	bool SetPramVar(/*[in]*/ long VarIndex,/*[in]*/ long BandWidth,/*[in]*/ bool Undo);
@@ -250,7 +250,7 @@ public:
 	bool ApplyRecode();
 	bool DoTruncate(/*[in]*/ long VarIndex, /*[in]*/ long nPos);
 	bool UndoRecode(/*[in]*/ long VarIndex);
-	bool DoRecode(/*[in]*/ long VarIndex,/*[in]*/ std::string RecodeString,/*[in]*/ std::string eMissing1,/*[in]*/ std::string eMissing2,/*[in,out]*/ long *ErrorType,/*[in,out]*/ long *ErrorLine, /*[in,out]*/ long *ErrorPos, /*[in,out]*/ std::string *WarningString);
+	bool DoRecode(/*[in]*/ long VarIndex,/*[in]*/ const char *RecodeString,/*[in]*/ const char *eMissing1,/*[in]*/ const char *eMissing2,/*[in,out]*/ long *ErrorType,/*[in,out]*/ long *ErrorLine, /*[in,out]*/ long *ErrorPos, /*[in,out]*/ const char **WarningString);
 	bool UnsafeVariableClose(/*[in]*/ long VarIndex);
 	bool UnsafeVariableCodes(/*[in]*/ long VarIndex,/*[in]*/  long CodeIndex,/*[in,out]*/  long *IsMissing, /*[in,out]*/  long *Freq,/*[in,out]*/  const char **Code, /*[in,out]*/ long *Count, /*[in,out]*/ long *UCArray);
 	bool UnsafeVariablePrepare(/*[in]*/ long VarIndex, /*[in]*/  long *nCode);
