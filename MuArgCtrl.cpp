@@ -1,13 +1,14 @@
 // MuArgCtrl.cpp : Implementation of CMuArgCtrl
 #include "MuArgCtrl.h"
 #include <stdio.h>
-#include <string>
-#include <vector>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
+
+#include <vector>
+#include <string>
 #include <algorithm>
 #include <sstream>
-#include <time.h>
 
 
 std::string trimright(const std::string &t)
@@ -39,9 +40,16 @@ std::string trimleft(const std::string &t)
 /////////////////////////////////////////////////////////////////////////////
 // CMuArgCtrl
 
-void CMuArgCtrl::FireUpdateProgress(short Perc)
+void CMuArgCtrl::SetProgressListener(IProgressListener* ProgressListener)
 {
-	Fire_UpdateProgress(Perc);
+    m_ProgressListener = ProgressListener;
+}
+
+void CMuArgCtrl::FireUpdateProgress(int Perc)
+{
+	if (m_ProgressListener != NULL) {
+		m_ProgressListener->UpdateProgress(Perc);
+	}
 }
 
 
@@ -2794,7 +2802,7 @@ bool CMuArgCtrl::GetVarCode(long VarIndex, long CodeIndex, const char **Code, lo
     return true;
 }
 
-bool CMuArgCtrl::GetVarProperties(long VarIndex, long *StartPos, long *nPos, long *nSuppress, double *Entropy, long *BandWidth, std::string *Missing1, std::string *Missing2, long *NofCodes, long *NofMissing)
+bool CMuArgCtrl::GetVarProperties(long VarIndex, long *StartPos, long *nPos, long *nSuppress, double *Entropy, long *BandWidth, const char **Missing1, const char **Missing2, long *NofCodes, long *NofMissing)
 {
     int i, v = VarIndex - 1;
 
@@ -5041,13 +5049,11 @@ bool CMuArgCtrl::SetBHRThreshold(long TableIndex, double BHRThreshold, long *nUn
     long BIRCounter =0;
     long tempRec, tempHH;
     if ((index <0) || (index >= m_ntab))	{
-    	*pVal = VARIANT_FALSE;
-	return S_OK;
+	return false;
     }
 
     if (!m_tab[index].IsBIR)	{
-	*pVal = VARIANT_FALSE;
-	return S_OK;
+	return false;
     }
 
     // to find which element of HH.BHR to get
@@ -5077,217 +5083,185 @@ bool CMuArgCtrl::SetBHRThreshold(long TableIndex, double BHRThreshold, long *nUn
 
 	*nUnsafeHH = tempHH;
 	*nUnsafeRec = tempRec;
-	*pVal = VARIANT_TRUE;
-	return S_OK;
-
-
+	return true;
 }
 
-STDMETHODIMP CMuArgCtrl::CalculateBIRFreq(long TableIndex,
-											long nUnsafe, double *BIRResult,
-											long *ErrorCode,
-											VARIANT_BOOL *pVal)
+bool CMuArgCtrl::CalculateBIRFreq(long TableIndex, long nUnsafe, double *BIRResult, long *ErrorCode)
 {
-	long i,ind = TableIndex-1;
-	CTable *tab;
-	FILE *fdread;
+    long i,ind = TableIndex-1;
+    CTable *tab;
+    FILE *fdread;
 
-	double *tempBIRarray;
-	long  *tempFreqarray;
-	UCHAR str[MAXRECORDLENGTH];
-	double BIRres;
+    double *tempBIRarray;
+    long  *tempFreqarray;
+    char str[MAXRECORDLENGTH];
+    double BIRres;
 
-
-	if (ind < 0 || ind >= m_ntab)	{
-		*ErrorCode = NOTABLES;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-	tab = &(m_tab[ind]);
-	if (tab->HasRecode){
-		tab = &(m_tab[m_ntab + ind]); // take the recoded one
-	}
-
-
-	if (!tab->IsBIR)	{
-		*ErrorCode = NOBIRTAB;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-
-	if (m_fname[0] == 0) {
-		*ErrorCode = NODATAFILE;
-		*pVal = VARIANT_FALSE;
-	    return S_OK;
-	}
-
-	fdread = fopen(m_fname, "r");
-	if (fdread == 0) {
-		*ErrorCode = FILENOTFOUND;
-		*pVal = VARIANT_FALSE;
-	    return S_OK;
-	}
-
-
-	tempBIRarray = new double [tab->nCell];
-	tempFreqarray = new long [tab->nCell];
-	//initialize array
-	for (i=0; i<tab->nCell; i++)	{
-		tempBIRarray[i] = 0;
-		tempFreqarray[i] = tab->Cell[i];
-	}
-	int recnr = 0;
-	int res;
-	if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)) {
-		res = ReadMicroRecord(fdread, str);
-	}
-
-
-	while (!feof(fdread) ) {
-		res = ReadMicroRecord(fdread, str);
-		if (++recnr % FIREPROGRESS == 0) {
-      FireUpdateProgress((short)(ftell(fdread) * 100.0 / m_fSize));  // for progressbar in container
+    if (ind < 0 || ind >= m_ntab){
+        *ErrorCode = NOTABLES;
+	return false;
     }
-    switch (res) {
-    case INFILE_ERROR:
-      fclose(fdread);
+    tab = &(m_tab[ind]);
+    if (tab->HasRecode){
+	tab = &(m_tab[m_ntab + ind]); // take the recoded one
+    }
 
+    if (!tab->IsBIR){
+	*ErrorCode = NOBIRTAB;
+	return false;
+    }
+
+    if (m_fname[0] == 0){
+	*ErrorCode = NODATAFILE;
+        return false;
+    }
+
+    fdread = fopen(m_fname, "r");
+    if (fdread == 0){
+	*ErrorCode = FILENOTFOUND;
+        return false;
+    }
+
+    tempBIRarray = new double [tab->nCell];
+    tempFreqarray = new long [tab->nCell];
+    //initialize array
+    for (i=0; i<tab->nCell; i++){
+    	tempBIRarray[i] = 0;
+	tempFreqarray[i] = tab->Cell[i];
+    }
+    int recnr = 0;
+    int res;
+    if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)){
+	res = ReadMicroRecord(fdread, str);
+    }
+
+    while (!feof(fdread)){
+	res = ReadMicroRecord(fdread, str);
+	if (++recnr % FIREPROGRESS == 0) {
+            FireUpdateProgress((short)(ftell(fdread) * 100.0 / m_fSize));  // for progressbar in container
+        }
+        switch (res) {
+            case INFILE_ERROR:
+                fclose(fdread);
 		delete[] tempBIRarray;
 		delete[] tempFreqarray;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-      break;
-    case INFILE_EOF:
-      goto oke;
-      break;
-    case INFILE_OKE:
+		return false;
+                break;
+            case INFILE_EOF:
+                goto oke;
+                break;
+            case INFILE_OKE:
 //		if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)&&(recnr == 1)) {
 //			continue;
 //		}
 //		else {
-			FillBIRArray(*tab,tempBIRarray,str);
-
-			break;
-
+                FillBIRArray(*tab,tempBIRarray,str);
+		break;
 //		}
+        }
     }
-  }
 
+    oke:
+    fclose(fdread);
+    // Now sort the stuff
+    QuickSortBIRFreqArray(tempBIRarray, tempFreqarray,0,tab->nCell-1);
 
-	oke:
-
-	fclose(fdread);
-	// Now sort the stuff
-
-	QuickSortBIRFreqArray(tempBIRarray, tempFreqarray,0,tab->nCell-1);
-
-	long tempUnsafe = 0;
-	for(i=0; i<tab->nCell; i++)	{
-		tempUnsafe = tempUnsafe + tempFreqarray[i];
-		if (tempUnsafe > nUnsafe)	{
-			break;
-		}
+    long tempUnsafe = 0;
+    for(i=0; i<tab->nCell; i++){
+	tempUnsafe = tempUnsafe + tempFreqarray[i];
+	if (tempUnsafe > nUnsafe){
+            break;
 	}
+    }
 
-	if ((i == tab->nCell) || (i==0))	{
-		delete[] tempBIRarray;
-		delete[] tempFreqarray;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
-	}
-	BIRres = tempBIRarray[i-1];
-	*BIRResult = BIRres;
-
-
+    if ((i == tab->nCell) || (i==0)){
 	delete[] tempBIRarray;
 	delete[] tempFreqarray;
-	*pVal = VARIANT_TRUE;
-	return S_OK;
+	return false;
+    }
+    BIRres = tempBIRarray[i-1];
+    *BIRResult = BIRres;
 
-
-
+    delete[] tempBIRarray;
+    delete[] tempFreqarray;
+    return true;
 }
 
 
-bool CMuArgCtrl::FillBIRArray(CTable &tab, double *BIRarray, UCHAR *record)
+bool CMuArgCtrl::FillBIRArray(CTable &tab, double *BIRarray, char *record)
 {
-	if (!ComputeVarIndices(record) ) return false;
-	long CellNr=0;
-	long j;
-	double v;
-	long freq;
-	double weight;
-	BOOL  HasMissing = false;
-	int DimNr[MAXDIM];
-	for (j =0; j<tab.nDim; j++)	{
-		CellNr *= tab.SizeDim[j];
-		CellNr += m_var[tab.Varnr[j]].TableIndex;
-		DimNr[j] = m_var[tab.Varnr[j]].TableIndex;
-
-		if (m_var[tab.Varnr[j]].TableIsMissing) {
-				HasMissing = true;
-		}
+    if (!ComputeVarIndices(record)) return false;
+    long CellNr=0;
+    long j;
+    double v;
+    long freq;
+    double weight;
+    bool  HasMissing = false;
+    int DimNr[MAXDIM];
+    for (j =0; j<tab.nDim; j++){
+	CellNr *= tab.SizeDim[j];
+	CellNr += m_var[tab.Varnr[j]].TableIndex;
+	DimNr[j] = m_var[tab.Varnr[j]].TableIndex;
+	if (m_var[tab.Varnr[j]].TableIsMissing){
+            HasMissing = true;
 	}
-	assert(tab.GetCellNr(DimNr) == CellNr);
-	VARIANT_BOOL temp;
-	freq = tab.Cell[CellNr];
-	if (freq >0 ) {
-		if (AddMissing(tab,DimNr,freq,weight, HasMissing)) {
-			BaseIndividualRisk(freq,weight,&v, &temp);
-			assert(temp);
-			BIRarray[CellNr] = v;
-		}
+    }
+    assert(tab.GetCellNr(DimNr) == CellNr);
+    bool temp;
+    freq = tab.Cell[CellNr];
+    if (freq >0 ) {
+	if (AddMissing(tab,DimNr,freq,weight, HasMissing)) {
+            temp = BaseIndividualRisk(freq,weight,&v);
+            assert(temp);
+            BIRarray[CellNr] = v;
 	}
-	return true;
+    }
+    return true;
 }
-
 
 
 void CMuArgCtrl::QuickSortBIRFreqArray(double * BIR, long *Freq, int first, int last)
 {
-	int i, j;
-	double mid, BIRtemp;
-	long Freqtemp;
-	assert(first >= 0 && last >= first);
+    int i, j;
+    double mid, BIRtemp;
+    long Freqtemp;
+    assert(first >= 0 && last >= first);
 
-	do {
-		i = first;
-		j = last;
-		mid = (BIR[(i + j) / 2]);
-		do {
-			while (BIR[i] < mid) i++;
-			while (BIR[j] > mid) j--;
-			if (i < j) {
-				BIRtemp = BIR[i];
-				BIR[i] = BIR[j];
-				BIR[j] = BIRtemp;
-				Freqtemp = Freq[i];
-				Freq[i] = Freq[j];
-				Freq[j] = Freqtemp;
-			} else {
-			if (i == j) {
-				i++;
-				j--;
-			}
-			break;
+    do{
+        i = first;
+	j = last;
+	mid = (BIR[(i + j) / 2]);
+        do{
+            while (BIR[i] < mid) i++;
+            while (BIR[j] > mid) j--;
+            if (i < j){
+                BIRtemp = BIR[i];
+                BIR[i] = BIR[j];
+		BIR[j] = BIRtemp;
+		Freqtemp = Freq[i];
+		Freq[i] = Freq[j];
+		Freq[j] = Freqtemp;
+            } else {
+		if (i == j){
+                    i++;
+                    j--;
 		}
+		break;
+            }
 	} while (++i <= --j);
 
-		if (j - first < last - i) {
-			if (j > first) {
-				QuickSortBIRFreqArray(BIR,Freq, first, j);
-			}
-			first = i;
-		} else {
-			if (i < last) {
-			QuickSortBIRFreqArray(BIR,Freq, i, last);
-      }
-      last = j;
-    }
-  } while (first < last);
-
-
-
+	if (j - first < last - i){
+            if (j > first) {
+                QuickSortBIRFreqArray(BIR,Freq, first, j);
+            }
+            first = i;
+	} else {
+            if (i < last){
+                QuickSortBIRFreqArray(BIR,Freq, i, last);
+            }
+            last = j;
+        }
+    } while (first < last);
 }
 /*
 double CMuArgCtrl::FindBIRforNumIterations(double BIR0, long NumIter,
@@ -5346,101 +5320,83 @@ double CMuArgCtrl::FindBIRforNumIterations(double BIR0, long NumIter,
 
 
 
-STDMETHODIMP CMuArgCtrl::CalculateBHRFreq(long TableIndex, VARIANT_BOOL UseNumOfHH,
-															long nUnsafeHH, long nUnsafeRec,
-															double *ResBHR, long *ErrCode,
-															VARIANT_BOOL *pVal)
+bool CMuArgCtrl::CalculateBHRFreq(long TableIndex, bool UseNumOfHH, long nUnsafeHH, long nUnsafeRec, double *ResBHR, long *ErrCode)
 {
+    long ind = TableIndex -1;
+    long i, BIRCounter=0;
+    CTable *tab;
+    double *tempBHRarray;
+    long *tempFreqarray;
+    long tempUnsafeHH=0;
+    long tempUnsafeRec =0;
+    double BHRRes;
+    if ((ind < 0) || (ind >= m_ntab)){
+	*ErrCode = NOTABLES;
+	return false;
+    }
 
-	long ind = TableIndex -1;
-	long i, BIRCounter=0;
-	CTable *tab;
-	double *tempBHRarray;
-	long *tempFreqarray;
-	long tempUnsafeHH=0;
-	long tempUnsafeRec =0;
-	double BHRRes;
-	if ((ind < 0) || (ind >= m_ntab))	{
-		*ErrCode = NOTABLES;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
+    tab = &(m_tab[ind]);
+    if (!tab->IsBIR){
+	*ErrCode = NOBIRTAB;
+	return false;
+    }
+
+    if (m_lNumberOfHH==0){
+	*ErrCode = NOHOUSEHOLDS;
+	return false;
+    }
+
+    for (i=0; i<m_ntab; i++){
+	if (i== ind){
+            break;
+        }
+	if (m_tab[i].IsBIR){
+            BIRCounter++;
+	}
+    }
+
+    tempBHRarray = new double [m_lNumberOfHH];
+    for (i=0; i<m_lNumberOfHH; i++){
+	tempBHRarray [i] = m_HH[i].m_dBHR[BIRCounter];
+    }
+    if (UseNumOfHH){
+	QuickSortDoubleArray(tempBHRarray, 0, m_lNumberOfHH-1);
+	for (i=0; i<m_lNumberOfHH; i++){
+            tempUnsafeHH++;
+            if (tempUnsafeHH > nUnsafeHH){
+		break;
+            }
 	}
 
-	tab = &(m_tab[ind]);
-	if (!tab->IsBIR)	{
-		*ErrCode = NOBIRTAB;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
+	if ((i == m_lNumberOfHH) || (i==0)){
+            delete[] tempBHRarray;
+            return false;
+	}
+	BHRRes = tempBHRarray[i-1];
+	*ResBHR = BHRRes;
+    }
+    else{
+	tempFreqarray = new long [m_lNumberOfHH];
+	for (i=0; i< m_lNumberOfHH; i++){
+            tempFreqarray[i] = m_HH[i].m_lNumberofMembers;
 	}
 
-	if (m_lNumberOfHH==0)	{
-		*ErrCode = NOHOUSEHOLDS;
-		*pVal = VARIANT_FALSE;
-		return S_OK;
+        QuickSortBIRFreqArray(tempBHRarray, tempFreqarray, 0, m_lNumberOfHH-1);
+	for (i=0; i<m_lNumberOfHH; i++){
+            tempUnsafeRec = tempUnsafeRec + tempFreqarray[i];
+            if (tempUnsafeRec > nUnsafeRec){
+		break;
+            }
 	}
-
-	for (i=0; i<m_ntab; i++)	{
-		if (i== ind) {
-			break;
-		}
-		if (m_tab[i].IsBIR)	{
-			BIRCounter++;
-		}
+	if ((i == m_lNumberOfHH) || (i==0)){
+            delete[] tempBHRarray;
+            delete[] tempFreqarray;
+            return false;
 	}
+	BHRRes = tempBHRarray[i-1];
+	*ResBHR = BHRRes;
+    }
 
-	tempBHRarray = new double [m_lNumberOfHH];
-	for (i=0; i<m_lNumberOfHH; i++)	{
-		tempBHRarray [i] = m_HH[i].m_dBHR[BIRCounter];
-	}
-
-	if (UseNumOfHH)	{
-		QuickSortDoubleArray(tempBHRarray, 0, m_lNumberOfHH-1);
-		for (i=0; i<m_lNumberOfHH; i++)	{
-			tempUnsafeHH++;
-			if (tempUnsafeHH > nUnsafeHH)	{
-				break;
-			}
-		}
-
-		if ((i == m_lNumberOfHH) || (i==0))	{
-			delete[] tempBHRarray;
-			*pVal = VARIANT_FALSE;
-			return S_OK;
-		}
-		BHRRes = tempBHRarray[i-1];
-		*ResBHR = BHRRes;
-	}
-
-	else	{
-		tempFreqarray = new long [m_lNumberOfHH];
-		for (i=0; i< m_lNumberOfHH; i++)	{
-			tempFreqarray[i] = m_HH[i].m_lNumberofMembers;
-		}
-
-		QuickSortBIRFreqArray(tempBHRarray, tempFreqarray, 0, m_lNumberOfHH-1);
-		for (i=0; i<m_lNumberOfHH; i++)	{
-			tempUnsafeRec = tempUnsafeRec + tempFreqarray[i];
-			if (tempUnsafeRec > nUnsafeRec)	{
-				break;
-			}
-		}
-		if ((i == m_lNumberOfHH) || (i==0))	{
-			delete[] tempBHRarray;
-			delete[] tempFreqarray;
-			*pVal = VARIANT_FALSE;
-			return S_OK;
-		}
-		BHRRes = tempBHRarray[i-1];
-		*ResBHR = BHRRes;
-
-	}
-
-	delete[] tempBHRarray;
-	*pVal = VARIANT_TRUE;
-	return S_OK;
+    delete[] tempBHRarray;
+    return true;
 }
-
-
-
-
-

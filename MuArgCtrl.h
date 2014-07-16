@@ -13,8 +13,8 @@
 
 #include <math.h>
 #include <float.h>
-//#include "MuArgCP.h"
 #include "Household.h"
+#include "IProgressListener.h"
 /*CString extern CurrentHHName;
 CString extern LastHHName;
 */
@@ -25,6 +25,7 @@ class CMuArgCtrl
 public:
 	CMuArgCtrl()
 	{
+            m_ProgressListener = NULL;
             m_nvar = 0;
             m_var = 0;
             m_ntab = 0;
@@ -63,6 +64,10 @@ public:
 	}
 
 private:
+    
+        IProgressListener* m_ProgressListener;
+        void FireUpdateProgress(int Perc);
+        
 	long m_nvar;
 	CVariable *m_var;
 
@@ -144,8 +149,6 @@ private:
 	void CleanTables();
 	void CleanVars();
 
-	void FireUpdateProgress(short Perc);
-
 	int  ReadMicroRecord(FILE *fd, char *str);
 	bool DoMicroRecord(char *str, int *varindex);
 	bool ReadVariableFreeFormat(char *Str, long VarIndex, std::string *VarCode);
@@ -217,6 +220,7 @@ private:
 	int GGD(int a, int b);
 
 public:
+        void SetProgressListener(IProgressListener* ProgressListener);
 	bool ComputeBIRRateThreshold(long TableIndex, double Risk, double *ReIdentRate);
 	long NumberOfHouseholds();
 	bool CalculateBHRFreq(/*[in]*/ long TableIndex, /*[in]*/ bool UseNumOfHH, /*[in]*/ long nUnsafeHH, /*[in]*/ long nUnsafeRec, /*[in,out]*/ double * ResBHR, /*[in,out]*/  long * ErrCode);
@@ -231,7 +235,7 @@ public:
 	bool SetSuppressPrior(/*[in]*/ long VarIndex, /*[in]*/ long Priority);
 	bool SetRound(/*[in]*/ long VarIndex, /*[in]*/ double RoundBase, /*[in]*/ long nDec, /*[in]*/ bool Undo);
 	bool SetChangeFile(/*[in]*/ long FileIndex, /*[in]*/ std::string FileName, /*[in]*/ long nVar, /*[in,out]*/ long *VarIndex, /*[in]*/ std::string FileSeperator);
-	bool GetVarProperties(/*[in]*/ long VarIndex, /*[in,out]*/ long *StartPos, /*[in,out]*/ long *nPos, /*[in,out]*/ long *nSuppress, /*[in,out]*/ double *Entropy, /*[in,out]*/ long *BandWidth,/*[in,out]*/  std::string *Missing1,/*[in,out]*/  std::string *Missing2, /*[in,out]*/ long *NofCodes, /*[in,out]*/ long *NofMissing);
+	bool GetVarProperties(/*[in]*/ long VarIndex, /*[in,out]*/ long *StartPos, /*[in,out]*/ long *nPos, /*[in,out]*/ long *nSuppress, /*[in,out]*/ double *Entropy, /*[in,out]*/ long *BandWidth,/*[in,out]*/  const char **Missing1,/*[in,out]*/  const char **Missing2, /*[in,out]*/ long *NofCodes, /*[in,out]*/ long *NofMissing);
 	bool GetVarCode(/*[in]*/ long VarIndex, /*[in]*/ long CodeIndex, /*[in,out]*/ const char **Code, /*[in,out]*/ long *PramPerc);
 	bool GetTableUC(/*[in]*/ long nDim, /*[in]*/ long Index,/*[in,out]*/ bool *BaseTable,/*[in,out]*/ long *nUC, /*[in,out]*/ long *VarList);
 	bool SetPramValue(/*[in]*/ long CodeIndex, /*[in]*/ long Value);
