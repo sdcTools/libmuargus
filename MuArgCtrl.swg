@@ -1,6 +1,6 @@
 // %module MuArgusCtrl
 // directors="1" needed for being able to use the director feature
-%module(directors="1") MuargusCtrl
+%module(directors="1") MuArgusCtrl
 
 %include <typemaps.i>
 %include <windows.i>
