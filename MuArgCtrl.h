@@ -223,11 +223,11 @@ public:
         void SetProgressListener(IProgressListener* ProgressListener);
 	bool ComputeBIRRateThreshold(long TableIndex, double Risk, double *ReIdentRate);
 	long NumberOfHouseholds();
-	bool CalculateBHRFreq(/*[in]*/ long TableIndex, /*[in]*/ bool UseNumOfHH, /*[in]*/ long nUnsafeHH, /*[in]*/ long nUnsafeRec, /*[in,out]*/ double * ResBHR, /*[in,out]*/  long * ErrCode);
+	bool CalculateBHRFreq(/*[in]*/ long TableIndex, /*[in]*/ bool UseNumOfHH, /*[in]*/ long nUnsafeHH, /*[in]*/ long nUnsafeRec, /*[in,out]*/ double *ResBHR, /*[in,out]*/  long *ErrCode);
 	bool CalculateBIRFreq(/*[in]*/ long TableIndex,  /*[in]*/ long nUnsafe, /*[in,out]*/ double *BIRResult, /*[in,out]*/ long *ErrorCode);
 	bool SetBHRThreshold(/*[in]*/ long TableIndex, /*[in]*/ double BHRThreshold, /*[in,out]*/ long *nUnsafeHH, /*[in,out]*/ long *nUnsafeRec);
-	bool GetBHRHistogramData(/*[in]*/ long TableIndex, /*[in]*/ long nClasses, /*[in,out]*/ double * ClassLeftValue, /*[in,out]*/   long * HHFrequency, /* [in,out] */ long * RecFrequency);
-	bool CalculateBaseHouseholdRisk(/*[in,out] */ long * ErrorCode);
+	bool GetBHRHistogramData(/*[in]*/ long TableIndex, /*[in]*/ long nClasses, /*[in,out]*/ double *ClassLeftValue, /*[in,out]*/   long *HHFrequency, /* [in,out] */ long *RecFrequency);
+	bool CalculateBaseHouseholdRisk(/*[in,out] */ long *ErrorCode);
 	bool MakeFileSafe(/*[in]*/ std::string FileName,/*[in]*/  bool WithPrior, /*[in]*/ bool  WithEntropy, /*[in]*/ long HHIdentOption, /*[in]*/ bool RandomizeOutput,/*[in]*/ bool PrintBHR);
 	bool GetBIRHistogramData(/*[in]*/ long TabIndex, /*[in]*/ long nClasses,/*[in,out]*/  double *ClassLeftValue, /*[in,out]*/ double *Ksi, /*[in,out]*/ long *Frequency);
 	bool MakeFileSafeClearOptions();

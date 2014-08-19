@@ -52,7 +52,11 @@ void CMuArgCtrl::FireUpdateProgress(int Perc)
 	}
 }
 
-
+/**
+ * Specifies the number of variables, reserves memory for the administration of the variables
+ * @param nvar number of variables
+ * returns false if nvar is not correct (<1) or insufficient memory
+ */
 bool CMuArgCtrl::SetNumberVar(long nvar)
 {
 //	CleanUp();  // in case of a second call very usefull
@@ -72,6 +76,22 @@ bool CMuArgCtrl::SetNumberVar(long nvar)
     }
 }
 
+/**
+ * Specifies the properties of a variable
+ * @param Index         long 1,2,... index of variable
+ * @param bPos          long 1,2,... starting position in micro data file
+ * @param nPos          long 1,2,... number of positions in micro data file, up to 100
+ * @param nDec          long 0,1,... number of decimal places (especially important when writing safe file
+ * @param Missing1      std::string code for first missing 
+ * @param Missing2      std::string code for second missing
+ * @param IsHHIdent     bool is identification variable for household
+ * @param IsHHVar       bool is a household variable
+ * @param IsCategorical bool is a categorical variable
+ * @param IsNumeric     bool is a numeric variable
+ * @param IsWeight      bool is a weight
+ * @param RelatedVar    long index of related variable
+ * @return              false if one or more parameters is wrong
+ */
 bool CMuArgCtrl::SetVariable(long Index, long bPos, long nPos, long nDec, std::string Missing1, std::string Missing2,
 				bool IsHHIdent, bool IsHHVar, bool IsCategorical, bool IsNumeric, bool IsWeight, long RelatedVar)
 {
@@ -146,6 +166,21 @@ bool CMuArgCtrl::SetVariable(long Index, long bPos, long nPos, long nDec, std::s
     return true;
 }
 
+/**
+ * Examines of each categorical variable which codes occur. In fixed format input files,
+ * all records are of equal length. The only exception are empty records, which are ignored 
+ * without warning
+ * @param FileName      std::string Name of file to be investigated
+ * @param ErrorCode     long
+ *                      FILENOTFOUND    file can not be opened
+ *                      EMPTYFILE       file is empty
+ *                      WRONGLENGTH     not all record lengths are equal
+ *                      RECORDTOOSHORT  a variable does not fit within specified record length
+ *                      NOVARIABLES     there are no variables specified 
+ * @param LineNumber    long Line number where error occurred
+ * @param VarIndex      long index of variable where error occurred
+ * @return              false in case of error
+ */
 bool CMuArgCtrl::ExploreFile(std::string FileName, long *ErrorCode, long *LineNumber, long *VarIndex)
 {
     long tempNumberofHH = 0;
@@ -444,7 +479,12 @@ void CMuArgCtrl::AddSpacesBefore(char *str, int len)
 }
 
 
-
+/**
+ * Specifies the number of the table to compute.
+ * Clears previously specified tables, if any.
+ * @param nTab  long: number of tables
+ * @return false if nTab is incorrect or if insufficient memory
+ */
 bool CMuArgCtrl::SetNumberTab(long nTab)
 {
     if (m_nvar == 0 || nTab < 1) {
@@ -562,6 +602,18 @@ void CMuArgCtrl::CleanTables()
     m_ntab = 0;
 }
 
+/**
+ * Specifies the attributes of a table.
+ * The threshold is not important in case IsBIR == true.
+ * In case of BIR, the threshold is specified after inspection of the histogram.
+ * @param TabIndex          long Index of the table
+ * @param Threshold         long Threshold
+ * @param nDim              long Number of dimensions (<=10)
+ * @param VarList           long The index for each dimension of the variable (1, 2, ..., nVar)
+ * @param IsBIR             bool Is individual-risk-base table
+ * @param BIRWeightVarIndex long Index of variabe containing BIR-associated weight
+ * @return false in case of specification errors
+ */
 bool CMuArgCtrl::SetTable(long TabIndex, long Threshold, long nDim, long *VarList, bool IsBIR, long BIRWeightVarIndex)
 {
     int i, d;
@@ -739,6 +791,24 @@ bool CMuArgCtrl::BaseIndividualRisk(long fk, double Fk, double *risk)
     return true;
 }
 
+/**
+ * Calculates all with SetTable specified tables from the data file and all subtables 
+ * thereof, e.g., for table ABC also subtables AB, AC, BC, A, B and C.
+ * This also applies to the tables with the BIR property.
+ * For each (sub)table the number of table cells with value in [0, threshold] is calculated.
+ * All tables are stored in memory.
+ * @param ErrorCode     long
+ *                      NOVARIABLES no variables specified
+ *                      NOTABLES no tables specified
+ *                      NOTENOUGHMEMORY all tables together have too much memory, at the moment
+ *                      the limit is 50MB. This is to prevent the computer from swapping which 
+ *                      unfortunately has unpleasant effects
+ *                      NOTABLEMEMORY for a single table there is not enough memory
+ *                      NODATAFILE there is no file specified to examine
+ *                      FILENOTFOUND file can not be opened
+ * @param TableIndex    long Index of table where error occurred, -1 = no error
+ * @return false in case of error
+ */
 bool CMuArgCtrl::ComputeTables(long *ErrorCode, long *TableIndex)
 {
     long MemSizeAll = 0, MemSizeTable;
@@ -1397,6 +1467,10 @@ int CMuArgCtrl::CompareUCList(CUCList& a, CUCList& b)
     return memcmp(a.Varnr, b.Varnr, sizeof(a.Varnr) );
 }
 
+/**
+ * Calculates the maximum number nUC of the permanent (sub)tables
+ * @return long Maximum number nUC of the permanent (sub)tables
+ */
 long CMuArgCtrl::GetMaxnUC()
 {
     int i, max = 0;
@@ -1414,6 +1488,13 @@ long CMuArgCtrl::GetMaxnUC()
     return max;
 }
 
+/**
+ * Calculates for each relevant dimension (1,2,...) the number of unsafe combinations (UC) for a variable
+ * @param VarIndex  long Index of the variable
+ * @param Count     long Number of elements in UCArray
+ * @param UCArray   long* Array of UCs of dimensions 1, 2, ..., Count
+ * @return false if one or more parameters is wrong
+ */
 bool CMuArgCtrl::UnsafeVariable(long VarIndex, long *Count, long *UCArray)
 {
     int ndim, i, j, nUnsafe, v = VarIndex - 1, counter;
@@ -1466,6 +1547,17 @@ bool CMuArgCtrl::UnsafeVariable(long VarIndex, long *Count, long *UCArray)
     return true;
 }
 
+/**
+ * Prepares for a variable the information by code
+ * In m_unsafe[nCode][MAXDIM+1] is stored for each code:
+ *      frequency (at index 0)
+ *      for each relevant dimension the number of UCs (at index 1, 2, ...)
+ * Any action not completed any other variable is reversed so UnsafeVariableClose is
+ * not necessarily required
+ * @param VarIndex  long Index of variable
+ * @param nCode     long Number of codes of the variable, including Missing
+ * @return false if one or more parameters is wrong
+ */
 bool CMuArgCtrl::UnsafeVariablePrepare(long VarIndex, long *nCode)
 {
     int v = VarIndex - 1;
@@ -1544,6 +1636,18 @@ bool CMuArgCtrl::UnsafeVariablePrepare(long VarIndex, long *nCode)
     return true;
 }
 
+/**
+ * Indicates a variable frequency code index, code and number of UCs per dimension
+ * UnsafeVariablePrepare should be invoked first with the same index variable
+ * @param VarIndex  long Index of variable
+ * @param CodeIndex long Index of code
+ * @param IsMissing 1 if Missing code, 0 otherwise
+ * @param Freq      long frequency of the code
+ * @param Code      char* Alphanumeric code
+ * @param Count     long Number of elements in UCArray
+ * @param UCArray   long* Array of UCs of dimensions 1, 2, ..., Count
+ * @return false if one or more parameters is wrong
+ */
 bool CMuArgCtrl::UnsafeVariableCodes(long VarIndex, long CodeIndex, long *IsMissing, long *Freq, const char **Code, long *Count, long *UCArray)
 {
     int v = VarIndex - 1;
@@ -1593,6 +1697,11 @@ bool CMuArgCtrl::UnsafeVariableCodes(long VarIndex, long CodeIndex, long *IsMiss
     return true;
 }
 
+/**
+ * Frees memory reserved in UnsafeVariablePrepare
+ * @param VarIndex  long Index of variable
+ * @return false if parameter is wrong
+ */
 bool CMuArgCtrl::UnsafeVariableClose(long VarIndex)
 {
     int v = VarIndex - 1;
@@ -1610,6 +1719,33 @@ bool CMuArgCtrl::UnsafeVariableClose(long VarIndex)
     return true;
 }
 
+/**
+ * Reduces the number of codes of a variable by grouping several codes together. 
+ * The RecodeString are separated by newline characters(\r \n).
+ * Lines are of the form "object codes : source codes"
+ * Source codes that are too short are expanded through spaces in front of it.
+ * Codes may be surrounded by quotation marks ("3 - "), it may be necessary if
+ * the end code ends with a space or a comma as a code or contains a dash. 
+ * Examples:
+ * 0 - 90                   All codes between 0 and 90 (inclusive)
+ * 1: 91-500                New code 1 is old codes 91 to 500 (inclusive)
+ * 2: 501 -                 New code 2 is old codes >= 501
+ * 3: 11, "3", 512, 530-570 New code 3 is combination of multiple series, separated by ','
+ * 
+ * A code is always treated alphanumerical. Therefore, the following comparisons hold:
+ * "1a" > "19"
+ * "1 " < "11"
+ * 
+ * @param VarIndex      long Index of variable
+ * @param RecodeString  char* Specification of string of the recoding
+ * @param eMissing1     char* Value of Missing1
+ * @param eMissing2     char* Value of Missing2
+ * @param ErrorType     long Wrong type
+ * @param ErrorLine     long Line where error occurred
+ * @param ErrorPos      long Position where error occurred in line
+ * @param WarningString char* Warning of overlapping sources, non-mentioned codes, etc.
+ * @return false if one or more parameters is wrong
+ */
 bool CMuArgCtrl::DoRecode(long VarIndex, const char *RecodeString, const char *eMissing1, const char *eMissing2, long *ErrorType, long *ErrorLine, long *ErrorPos, const char **WarningString)
 {
     int i, v = VarIndex - 1, oke, maxwidth = 0;
@@ -2177,6 +2313,18 @@ int CMuArgCtrl::ReadWord(const char *str, char* CodeFrom, char *CodeTo, char End
     return i; // oke, return current position
 }
 
+/**
+ * Undoes a recoding. There cannot be a re-encoding applied on a recoded variable.
+ * A recoding is always applied on the basic code list of a variable. 
+ * A new recoding can be done without calling this function first.
+ * The results can be retrieved using
+ * UnsafeVariable
+ * UnsafeVariablePrepare
+ * UnsafeVariableCodes
+ * UnsafeVriableClose
+ * @param VarIndex  long Index of the variable
+ * @return false if parameter in wrong
+ */
 bool CMuArgCtrl::UndoRecode(long VarIndex)
 {   
     int v = VarIndex - 1;
@@ -2213,6 +2361,13 @@ void CMuArgCtrl::SetTableHasRecode()
     }
 }
 
+/**
+ * Reduces the number of codes of a variable by cutting off one or more positions at the right
+ * @param VarIndex  long Index of variable
+ * @param nPos      long Number of positions to be truncated
+ * @return false if one or more parameters is wrong (e.g. no categorical variable or
+ * nPos >= length(variable)
+ */
 bool CMuArgCtrl::DoTruncate(long VarIndex, long nPos)
 {
     int i, v = VarIndex - 1;
@@ -2273,6 +2428,15 @@ bool CMuArgCtrl::DoTruncate(long VarIndex, long nPos)
     return true;
 }
 
+/**
+ * Re-calculates the (sub)tables, e.g., because of a recoding
+ * Results can be retrieved using 
+ * UnsafeVariable
+ * UnsafeVariablePrepare
+ * UnsafeVariableCodes
+ * UnsafeVariableClose
+ * @return always true
+ */
 bool CMuArgCtrl::ApplyRecode()
 {
     ComputeRecodeTables();
@@ -2611,6 +2775,15 @@ bool CMuArgCtrl::SetBirThreshold(long TabIndex, double Threshold, long *nUnsafe)
     return true;
 }
 
+/**
+ * Sets for a given numerical variable the code to be used to replace all values above 
+ * a certain value. E.g., all values above 600,000 receive the text ">=600,000"
+ * @param VarIndex  long Index of the variable
+ * @param TopLevel  double values >= TopLevel are to be replaced
+ * @param TopString std::string Code used for replacement
+ * @param TopUndo   bool False when setting the topcode, true when undoing it
+ * @return false if VarIndex is wrong
+ */
 bool CMuArgCtrl::SetCodingTop(long VarIndex, double TopLevel, std::string TopString, bool TopUndo)
 {
     int v = VarIndex - 1;
@@ -2626,6 +2799,15 @@ bool CMuArgCtrl::SetCodingTop(long VarIndex, double TopLevel, std::string TopStr
     return true;
 }
 
+/**
+ * Sets for a given numerical variable the code to be used to replace all values  
+ * below a certain value. E.g., all values below 100,000 receive the text "<=100,000"
+ * @param VarIndex      long Index of the variable
+ * @param BottomLevel   double values <= BottomLevel are to be replaced
+ * @param BottomString  std::string Code used for replacement
+ * @param BottomUndo    bool False when setting the bottomcode, true when undoing it
+ * @return false if VarIndex is wrong
+ */
 bool CMuArgCtrl::SetCodingBottom(long VarIndex, double BottomLevel, std::string BottomString, bool BottomUndo)
 {
     int v = VarIndex - 1;
@@ -2641,6 +2823,14 @@ bool CMuArgCtrl::SetCodingBottom(long VarIndex, double BottomLevel, std::string 
     return true;
 }
 
+/**
+ * Gives for a numerical variable the minimum and maximum value that occurs in the
+ * input file
+ * @param VarIndex  long Index of the variable
+ * @param Min       double Minimum value
+ * @param Max       double Maximum value
+ * @return false if parameter VarIndex is wrong
+ */
 bool CMuArgCtrl::GetMinMaxValue(long VarIndex, double *Min, double *Max)
 {
     int v = VarIndex - 1;
@@ -2655,6 +2845,11 @@ bool CMuArgCtrl::GetMinMaxValue(long VarIndex, double *Min, double *Max)
     return true;
 }
 
+/**
+ * Completes the specification of SetPramValue
+ * @param VarIndex  long Index of the variable
+ * @return false if VarIndex is wrong and/or not all codes are set
+ */
 bool CMuArgCtrl::ClosePramVar(long VarIndex)
 {
     int v = VarIndex - 1, i, n;
@@ -2674,6 +2869,15 @@ bool CMuArgCtrl::ClosePramVar(long VarIndex)
     return true;
 }
 
+/**
+ * Specifies on which variable the following SetPramValue calls apply.
+ * After these calls, the function ClosePramVar is to be called.
+ * This function checks if all codes of the pramvariable have received a value.
+ * @param VarIndex  long Index of the variable
+ * @param BandWidth long Bandwidth (-1 of no bandwith, 1, 2, ... otherwise)
+ * @param Undo      bool False to apply, true to undo
+ * @return 
+ */
 bool CMuArgCtrl::SetPramVar(long VarIndex, long BandWidth, bool Undo)
 {
     bool bUndo;
@@ -2720,6 +2924,22 @@ bool CMuArgCtrl::SetPramVar(long VarIndex, long BandWidth, bool Undo)
     return true;
 }
 
+/**
+ * Sets the PRAM-percentage for a code. This percentage is the probability that 
+ * the code does not change. If the code is changed, it is changed into one of 
+ * the other codes , each with probability (100 - Value)/n where n equals
+ * number of codes - 1  in case bandwidth is not applicable
+ * 2*bandwidth          in case bandwidth is applicable
+ * If bandwidth is applicable codes are only changed within a certain distance 
+ * from the original code. A code of 13 for index to be changed, with 
+ * bandwidth = 3 can only be changed to 10, 11, 12, 14, 15 or 16, each with 
+ * equal probability.
+ * A missing will never be changed.
+ * Pram-percentage ranges from 0 to 100 (both inclusive)
+ * @param CodeIndex long Index of Code
+ * @param Value     long Pram-percentage of not-changing
+ * @return false if CodeIndex is wrong, Value < 0, Value > 100
+ */
 bool CMuArgCtrl::SetPramValue(long CodeIndex, long Value)
 {
     int c = CodeIndex - 1, n, v = m_PramVarIndex;
@@ -2740,6 +2960,16 @@ bool CMuArgCtrl::SetPramValue(long CodeIndex, long Value)
     return true;
 }
 
+/**
+ * Gives for a certain number of dimensions the properties of a table.
+ * @param nDim      long Number of dimensions
+ * @param Index     long Sequence number
+ * @param BaseTable bool Is a base table (not a subtable)
+ * @param nUC       long Number of UCs
+ * @param VarList   long* nDim variable indices of the (sub) table
+ * @return true if table with requested index is found. 
+ *          If for Index==1 false is returned, there are no tables with that number of dimensions
+ */
 bool CMuArgCtrl::GetTableUC(long nDim, long Index, bool *BaseTable, long *nUC, long *VarList)
 {
     int i, d = 0;
@@ -2774,6 +3004,14 @@ bool CMuArgCtrl::GetTableUC(long nDim, long Index, bool *BaseTable, long *nUC, l
     return false;
 }
 
+/**
+ * Gives for a categorical variable the code-string and PRAM-percentage
+ * @param VarIndex  long Index of the variable
+ * @param CodeIndex long Index of the code
+ * @param Code      char* Alphanumeric value of the code
+ * @param PramPerc  long Percentage to be used in PRAM, -1 if not applicable
+ * @return false if parameter VarIndex and/or CodeIndex is wrong
+ */
 bool CMuArgCtrl::GetVarCode(long VarIndex, long CodeIndex, const char **Code, long *PramPerc)
 {
     int v = VarIndex - 1, c = CodeIndex - 1, n;
@@ -2891,6 +3129,15 @@ bool CMuArgCtrl::SetChangeFile(long FileIndex, std::string FileName, long nVar, 
     return true;
 }
 
+/**
+ * Sets for a numerical variable the rounding base. Rounding base can contain 
+ * decimals, e.g. "2.5". In that case give as rounding base 2.5 and nDec=1.
+ * @param VarIndex  long Index of the variable
+ * @param RoundBase double Rounding base
+ * @param nDec      long Number of decimals in rounding base
+ * @param Undo      bool False when setting the rounding base, true when undoing it
+ * @return false if VarIndex is wrong, RounBase <= 0, nDec < 0
+ */
 bool CMuArgCtrl::SetRound(long VarIndex, double RoundBase, long nDec, bool Undo)
 {
     int v = VarIndex - 1;
@@ -2905,6 +3152,17 @@ bool CMuArgCtrl::SetRound(long VarIndex, double RoundBase, long nDec, bool Undo)
     return true;
 }
 
+/**
+ * Sets for a categorical variable the priority when applying local suppression,
+ * i.e., when imputing "Missing1".
+ * It is possible that for a certain unsafe combination of variables, more than
+ * one candidate is eligible to be suppressed. When calling MakeFileSafe with the 
+ * option "with prior", the variable with the lowest priority is suppressed. 
+ * In case of equal priorities, the first variable is taken (with the smallest VarIndex)
+ * @param VarIndex  long Index of the variable
+ * @param Priority  long value of the priority
+ * @return false in case VarIndex is wrong
+ */
 bool CMuArgCtrl::SetSuppressPrior(long VarIndex, long Priority)
 {
     int v = VarIndex - 1;
@@ -2916,6 +3174,15 @@ bool CMuArgCtrl::SetSuppressPrior(long VarIndex, long Priority)
     return true;
 }
 
+/**
+ * Sets the percentage to decrease or increase the value of a numeric variable. 
+ * Variable will be changed by percentage, randomly selected from the interval 
+ * (100 - WeightNoise, 100 + WeightNoise)
+ * @param VarIndex      long Index of the variable
+ * @param WeightNoise   double Percentage by which the value is reduced/increased
+ * @param Undo          False when applying, true when undoing
+ * @return false if VarIndex if wrong, WeightNoise <= 0, WeighthNoise > 100
+ */
 bool CMuArgCtrl::SetWeightNoise(long VarIndex, double WeightNoise, bool Undo)
 {
     int v = VarIndex - 1;
@@ -2933,6 +3200,15 @@ bool CMuArgCtrl::SetWeightNoise(long VarIndex, double WeightNoise, bool Undo)
     return true;
 }
 
+/**
+ * Invalidates the special processing options:
+ * SetRound
+ * SetCodingTop
+ * SetCodingBottom
+ * SetWeightNoise
+ * SetPramVar
+ * @return always true
+ */
 bool CMuArgCtrl::MakeFileSafeClearOptions()
 {
     int i;

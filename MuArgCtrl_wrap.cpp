@@ -597,7 +597,7 @@ namespace Swig {
 
 namespace Swig {
   namespace {
-    jclass jclass_MuargusCtrlJNI = NULL;
+    jclass jclass_MuArgusCtrlJNI = NULL;
     jmethodID director_methids[1];
   }
 }
@@ -1258,7 +1258,7 @@ void SwigDirector_IProgressListener::UpdateProgress(int perc) {
   swigjobj = swig_get_self(jenv);
   if (swigjobj && jenv->IsSameObject(swigjobj, NULL) == JNI_FALSE) {
     jperc = (jint) perc;
-    jenv->CallStaticVoidMethod(Swig::jclass_MuargusCtrlJNI, Swig::director_methids[0], swigjobj, jperc);
+    jenv->CallStaticVoidMethod(Swig::jclass_MuArgusCtrlJNI, Swig::director_methids[0], swigjobj, jperc);
     jthrowable swigerror = jenv->ExceptionOccurred();
     if (swigerror) {
       jenv->ExceptionClear();
@@ -1286,7 +1286,7 @@ void SwigDirector_IProgressListener::swig_connect_director(JNIEnv *jenv, jobject
   
   if (swig_set_self(jenv, jself, swig_mem_own, weak_global)) {
     if (!baseclass) {
-      baseclass = jenv->FindClass("tauargus/extern/dataengine/IProgressListener");
+      baseclass = jenv->FindClass("muargus/extern/dataengine/IProgressListener");
       if (!baseclass) return;
       baseclass = (jclass) jenv->NewGlobalRef(baseclass);
     }
@@ -1312,7 +1312,7 @@ void SwigDirector_IProgressListener::swig_connect_director(JNIEnv *jenv, jobject
 extern "C" {
 #endif
 
-SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_delete_1IProgressListener(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_delete_1IProgressListener(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   IProgressListener *arg1 = (IProgressListener *) 0 ;
   
   (void)jenv;
@@ -1322,7 +1322,7 @@ SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_delete_1I
 }
 
 
-SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_IProgressListener_1UpdateProgress(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+SWIGEXPORT void JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_IProgressListener_1UpdateProgress(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
   IProgressListener *arg1 = (IProgressListener *) 0 ;
   int arg2 ;
   
@@ -1335,7 +1335,7 @@ SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_IProgress
 }
 
 
-SWIGEXPORT jlong JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_new_1IProgressListener(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_new_1IProgressListener(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   IProgressListener *result = 0 ;
   
@@ -1347,7 +1347,7 @@ SWIGEXPORT jlong JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_new_1IPr
 }
 
 
-SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_IProgressListener_1director_1connect(JNIEnv *jenv, jclass jcls, jobject jself, jlong objarg, jboolean jswig_mem_own, jboolean jweak_global) {
+SWIGEXPORT void JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_IProgressListener_1director_1connect(JNIEnv *jenv, jclass jcls, jobject jself, jlong objarg, jboolean jswig_mem_own, jboolean jweak_global) {
   IProgressListener *obj = *((IProgressListener **)&objarg);
   (void)jcls;
   SwigDirector_IProgressListener *director = dynamic_cast<SwigDirector_IProgressListener *>(obj);
@@ -1357,7 +1357,7 @@ SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_IProgress
 }
 
 
-SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_IProgressListener_1change_1ownership(JNIEnv *jenv, jclass jcls, jobject jself, jlong objarg, jboolean jtake_or_release) {
+SWIGEXPORT void JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_IProgressListener_1change_1ownership(JNIEnv *jenv, jclass jcls, jobject jself, jlong objarg, jboolean jtake_or_release) {
   IProgressListener *obj = *((IProgressListener **)&objarg);
   SwigDirector_IProgressListener *director = dynamic_cast<SwigDirector_IProgressListener *>(obj);
   (void)jcls;
@@ -1367,7 +1367,7 @@ SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_IProgress
 }
 
 
-SWIGEXPORT jlong JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_new_1CMuArgCtrl(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT jlong JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_new_1CMuArgCtrl(JNIEnv *jenv, jclass jcls) {
   jlong jresult = 0 ;
   CMuArgCtrl *result = 0 ;
   
@@ -1379,7 +1379,7 @@ SWIGEXPORT jlong JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_new_1CMu
 }
 
 
-SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_delete_1CMuArgCtrl(JNIEnv *jenv, jclass jcls, jlong jarg1) {
+SWIGEXPORT void JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_delete_1CMuArgCtrl(JNIEnv *jenv, jclass jcls, jlong jarg1) {
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   
   (void)jenv;
@@ -1389,7 +1389,7 @@ SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_delete_1C
 }
 
 
-SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetProgressListener(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
+SWIGEXPORT void JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetProgressListener(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jlong jarg2, jobject jarg2_) {
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   IProgressListener *arg2 = (IProgressListener *) 0 ;
   
@@ -1403,7 +1403,7 @@ SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1ComputeBIRRateThreshold(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jdoubleArray jarg4) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1ComputeBIRRateThreshold(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jdoubleArray jarg4) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -1441,7 +1441,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jint JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1NumberOfHouseholds(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jint JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1NumberOfHouseholds(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jint jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long result;
@@ -1456,7 +1456,7 @@ SWIGEXPORT jint JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1CalculateBHRFreq(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jboolean jarg3, jint jarg4, jint jarg5, jdoubleArray jarg6, jintArray jarg7) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1CalculateBHRFreq(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jboolean jarg3, jint jarg4, jint jarg5, jdoubleArray jarg6, jintArray jarg7) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -1517,7 +1517,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1CalculateBIRFreq(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jdoubleArray jarg4, jintArray jarg5) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1CalculateBIRFreq(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jdoubleArray jarg4, jintArray jarg5) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -1574,7 +1574,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetBHRThreshold(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jintArray jarg4, jintArray jarg5) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetBHRThreshold(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jintArray jarg4, jintArray jarg5) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -1631,7 +1631,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1GetBHRHistogramData(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jdoubleArray jarg4, jintArray jarg5, jintArray jarg6) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1GetBHRHistogramData(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jdoubleArray jarg4, jintArray jarg5, jintArray jarg6) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -1639,9 +1639,9 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   double *arg4 = (double *) 0 ;
   long *arg5 = (long *) 0 ;
   long *arg6 = (long *) 0 ;
-  double temp4 ;
-  long temp5 ;
-  long temp6 ;
+  jdouble *jarr4 ;
+  jint *jarr5 ;
+  jint *jarr6 ;
   bool result;
   
   (void)jenv;
@@ -1650,64 +1650,22 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   arg1 = *(CMuArgCtrl **)&jarg1; 
   arg2 = (long)jarg2; 
   arg3 = (long)jarg3; 
-  {
-    if (!jarg4) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg4) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp4 = (double)0;
-    arg4 = &temp4; 
-  }
-  {
-    if (!jarg5) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg5) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp5 = (long)0;
-    arg5 = &temp5; 
-  }
-  {
-    if (!jarg6) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg6) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp6 = (long)0;
-    arg6 = &temp6; 
-  }
+  if (!SWIG_JavaArrayInDouble(jenv, &jarr4, (double **)&arg4, jarg4)) return 0; 
+  if (!SWIG_JavaArrayInLong(jenv, &jarr5, (long **)&arg5, jarg5)) return 0; 
+  if (!SWIG_JavaArrayInLong(jenv, &jarr6, (long **)&arg6, jarg6)) return 0; 
   result = (bool)(arg1)->GetBHRHistogramData(arg2,arg3,arg4,arg5,arg6);
   jresult = (jboolean)result; 
-  {
-    jdouble jvalue = (jdouble)temp4;
-    jenv->SetDoubleArrayRegion(jarg4, 0, 1, &jvalue);
-  }
-  {
-    jint jvalue = (jint)temp5;
-    jenv->SetIntArrayRegion(jarg5, 0, 1, &jvalue);
-  }
-  {
-    jint jvalue = (jint)temp6;
-    jenv->SetIntArrayRegion(jarg6, 0, 1, &jvalue);
-  }
-  
-  
-  
+  SWIG_JavaArrayArgoutDouble(jenv, jarr4, (double *)arg4, jarg4); 
+  SWIG_JavaArrayArgoutLong(jenv, jarr5, (long *)arg5, jarg5); 
+  SWIG_JavaArrayArgoutLong(jenv, jarr6, (long *)arg6, jarg6); 
+  delete [] arg4; 
+  delete [] arg5; 
+  delete [] arg6; 
   return jresult;
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1CalculateBaseHouseholdRisk(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jintArray jarg2) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1CalculateBaseHouseholdRisk(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jintArray jarg2) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long *arg2 = (long *) 0 ;
@@ -1741,7 +1699,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1MakeFileSafe(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2, jboolean jarg3, jboolean jarg4, jint jarg5, jboolean jarg6, jboolean jarg7) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1MakeFileSafe(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2, jboolean jarg3, jboolean jarg4, jint jarg5, jboolean jarg6, jboolean jarg7) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   std::string arg2 ;
@@ -1775,7 +1733,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1GetBIRHistogramData(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jdoubleArray jarg4, jdoubleArray jarg5, jintArray jarg6) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1GetBIRHistogramData(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jdoubleArray jarg4, jdoubleArray jarg5, jintArray jarg6) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -1783,9 +1741,9 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   double *arg4 = (double *) 0 ;
   double *arg5 = (double *) 0 ;
   long *arg6 = (long *) 0 ;
-  double temp4 ;
+  jdouble *jarr4 ;
   double temp5 ;
-  long temp6 ;
+  jint *jarr6 ;
   bool result;
   
   (void)jenv;
@@ -1794,18 +1752,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   arg1 = *(CMuArgCtrl **)&jarg1; 
   arg2 = (long)jarg2; 
   arg3 = (long)jarg3; 
-  {
-    if (!jarg4) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg4) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp4 = (double)0;
-    arg4 = &temp4; 
-  }
+  if (!SWIG_JavaArrayInDouble(jenv, &jarr4, (double **)&arg4, jarg4)) return 0; 
   {
     if (!jarg5) {
       SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
@@ -1818,40 +1765,23 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
     temp5 = (double)0;
     arg5 = &temp5; 
   }
-  {
-    if (!jarg6) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg6) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp6 = (long)0;
-    arg6 = &temp6; 
-  }
+  if (!SWIG_JavaArrayInLong(jenv, &jarr6, (long **)&arg6, jarg6)) return 0; 
   result = (bool)(arg1)->GetBIRHistogramData(arg2,arg3,arg4,arg5,arg6);
   jresult = (jboolean)result; 
-  {
-    jdouble jvalue = (jdouble)temp4;
-    jenv->SetDoubleArrayRegion(jarg4, 0, 1, &jvalue);
-  }
+  SWIG_JavaArrayArgoutDouble(jenv, jarr4, (double *)arg4, jarg4); 
   {
     jdouble jvalue = (jdouble)temp5;
     jenv->SetDoubleArrayRegion(jarg5, 0, 1, &jvalue);
   }
-  {
-    jint jvalue = (jint)temp6;
-    jenv->SetIntArrayRegion(jarg6, 0, 1, &jvalue);
-  }
+  SWIG_JavaArrayArgoutLong(jenv, jarr6, (long *)arg6, jarg6); 
+  delete [] arg4; 
   
-  
-  
+  delete [] arg6; 
   return jresult;
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1MakeFileSafeClearOptions(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1MakeFileSafeClearOptions(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   bool result;
@@ -1866,7 +1796,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetWeightNoise(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jboolean jarg4) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetWeightNoise(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jboolean jarg4) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -1887,7 +1817,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetSuppressPrior(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetSuppressPrior(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -1906,7 +1836,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetRound(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jint jarg4, jboolean jarg5) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetRound(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jint jarg4, jboolean jarg5) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -1929,7 +1859,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetChangeFile(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jstring jarg3, jint jarg4, jintArray jarg5, jstring jarg6) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetChangeFile(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jstring jarg3, jint jarg4, jintArray jarg5, jstring jarg6) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -1937,7 +1867,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   long arg4 ;
   long *arg5 = (long *) 0 ;
   std::string arg6 ;
-  long temp5 ;
+  jint *jarr5 ;
   bool result;
   
   (void)jenv;
@@ -1954,18 +1884,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   (&arg3)->assign(arg3_pstr);
   jenv->ReleaseStringUTFChars(jarg3, arg3_pstr); 
   arg4 = (long)jarg4; 
-  {
-    if (!jarg5) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg5) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp5 = (long)0;
-    arg5 = &temp5; 
-  }
+  if (!SWIG_JavaArrayInLong(jenv, &jarr5, (long **)&arg5, jarg5)) return 0; 
   if(!jarg6) {
     SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
     return 0;
@@ -1976,16 +1895,13 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   jenv->ReleaseStringUTFChars(jarg6, arg6_pstr); 
   result = (bool)(arg1)->SetChangeFile(arg2,arg3,arg4,arg5,arg6);
   jresult = (jboolean)result; 
-  {
-    jint jvalue = (jint)temp5;
-    jenv->SetIntArrayRegion(jarg5, 0, 1, &jvalue);
-  }
-  
+  SWIG_JavaArrayArgoutLong(jenv, jarr5, (long *)arg5, jarg5); 
+  delete [] arg5; 
   return jresult;
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1GetVarProperties(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jintArray jarg3, jintArray jarg4, jintArray jarg5, jdoubleArray jarg6, jintArray jarg7, jobjectArray jarg8, jobjectArray jarg9, jintArray jarg10, jintArray jarg11) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1GetVarProperties(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jintArray jarg3, jintArray jarg4, jintArray jarg5, jdoubleArray jarg6, jintArray jarg7, jobjectArray jarg8, jobjectArray jarg9, jintArray jarg10, jintArray jarg11) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2177,7 +2093,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1GetVarCode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jobjectArray jarg4, jintArray jarg5) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1GetVarCode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jobjectArray jarg4, jintArray jarg5) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2236,7 +2152,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1GetTableUC(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jbooleanArray jarg4, jintArray jarg5, jintArray jarg6) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1GetTableUC(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jbooleanArray jarg4, jintArray jarg5, jintArray jarg6) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2246,7 +2162,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   long *arg6 = (long *) 0 ;
   bool temp4 ;
   long temp5 ;
-  long temp6 ;
+  jint *jarr6 ;
   bool result;
   
   (void)jenv;
@@ -2279,18 +2195,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
     temp5 = (long)0;
     arg5 = &temp5; 
   }
-  {
-    if (!jarg6) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg6) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp6 = (long)0;
-    arg6 = &temp6; 
-  }
+  if (!SWIG_JavaArrayInLong(jenv, &jarr6, (long **)&arg6, jarg6)) return 0; 
   result = (bool)(arg1)->GetTableUC(arg2,arg3,arg4,arg5,arg6);
   jresult = (jboolean)result; 
   {
@@ -2301,18 +2206,15 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
     jint jvalue = (jint)temp5;
     jenv->SetIntArrayRegion(jarg5, 0, 1, &jvalue);
   }
-  {
-    jint jvalue = (jint)temp6;
-    jenv->SetIntArrayRegion(jarg6, 0, 1, &jvalue);
-  }
+  SWIG_JavaArrayArgoutLong(jenv, jarr6, (long *)arg6, jarg6); 
   
   
-  
+  delete [] arg6; 
   return jresult;
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetPramValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetPramValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2331,7 +2233,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetPramVar(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jboolean jarg4) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetPramVar(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jboolean jarg4) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2352,7 +2254,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1ClosePramVar(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1ClosePramVar(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2369,7 +2271,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1GetMinMaxValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdoubleArray jarg3, jdoubleArray jarg4) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1GetMinMaxValue(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdoubleArray jarg3, jdoubleArray jarg4) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2424,7 +2326,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetCodingBottom(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jstring jarg4, jboolean jarg5) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetCodingBottom(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jstring jarg4, jboolean jarg5) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2454,7 +2356,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetCodingTop(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jstring jarg4, jboolean jarg5) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetCodingTop(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jstring jarg4, jboolean jarg5) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2484,7 +2386,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetBirThreshold(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jintArray jarg4) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetBirThreshold(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jintArray jarg4) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2522,7 +2424,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetNumberOfChangeFiles(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetNumberOfChangeFiles(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2539,7 +2441,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1CleanAll(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1CleanAll(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   bool result;
@@ -2554,7 +2456,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetOutFileInfo(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2, jstring jarg3, jstring jarg4, jboolean jarg5) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetOutFileInfo(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2, jstring jarg3, jstring jarg4, jboolean jarg5) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   bool arg2 ;
@@ -2591,7 +2493,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jint JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1NumberofRecords(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jint JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1NumberofRecords(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jint jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long result;
@@ -2606,7 +2508,7 @@ SWIGEXPORT jint JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetInFileInfo(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2, jstring jarg3, jboolean jarg4) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetInFileInfo(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jboolean jarg2, jstring jarg3, jboolean jarg4) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   bool arg2 ;
@@ -2634,7 +2536,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1WriteVariablesInFile(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2, jstring jarg3, jint jarg4, jintArray jarg5, jstring jarg6, jintArray jarg7) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1WriteVariablesInFile(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2, jstring jarg3, jint jarg4, jintArray jarg5, jstring jarg6, jintArray jarg7) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   std::string arg2 ;
@@ -2643,7 +2545,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   long *arg5 = (long *) 0 ;
   std::string arg6 ;
   long *arg7 = (long *) 0 ;
-  long temp5 ;
+  jint *jarr5 ;
   long temp7 ;
   bool result;
   
@@ -2668,18 +2570,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   (&arg3)->assign(arg3_pstr);
   jenv->ReleaseStringUTFChars(jarg3, arg3_pstr); 
   arg4 = (long)jarg4; 
-  {
-    if (!jarg5) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg5) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp5 = (long)0;
-    arg5 = &temp5; 
-  }
+  if (!SWIG_JavaArrayInLong(jenv, &jarr5, (long **)&arg5, jarg5)) return 0; 
   if(!jarg6) {
     SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
     return 0;
@@ -2702,21 +2593,18 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   }
   result = (bool)(arg1)->WriteVariablesInFile(arg2,arg3,arg4,arg5,arg6,arg7);
   jresult = (jboolean)result; 
-  {
-    jint jvalue = (jint)temp5;
-    jenv->SetIntArrayRegion(jarg5, 0, 1, &jvalue);
-  }
+  SWIG_JavaArrayArgoutLong(jenv, jarr5, (long *)arg5, jarg5); 
   {
     jint jvalue = (jint)temp7;
     jenv->SetIntArrayRegion(jarg7, 0, 1, &jvalue);
   }
-  
+  delete [] arg5; 
   
   return jresult;
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1ApplyRecode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1ApplyRecode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   bool result;
@@ -2731,7 +2619,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1DoTruncate(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1DoTruncate(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2750,7 +2638,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1UndoRecode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1UndoRecode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2767,7 +2655,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1DoRecode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jstring jarg3, jstring jarg4, jstring jarg5, jintArray jarg6, jintArray jarg7, jintArray jarg8, jobjectArray jarg9) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1DoRecode(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jstring jarg3, jstring jarg4, jstring jarg5, jintArray jarg6, jintArray jarg7, jintArray jarg8, jobjectArray jarg9) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2883,7 +2771,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1UnsafeVariableClose(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1UnsafeVariableClose(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2900,7 +2788,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1UnsafeVariableCodes(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jintArray jarg4, jintArray jarg5, jobjectArray jarg6, jintArray jarg7, jintArray jarg8) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1UnsafeVariableCodes(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jintArray jarg4, jintArray jarg5, jobjectArray jarg6, jintArray jarg7, jintArray jarg8) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -2914,7 +2802,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   long temp5 ;
   char *temp6 ;
   long temp7 ;
-  long temp8 ;
+  jint *jarr8 ;
   bool result;
   
   (void)jenv;
@@ -2971,18 +2859,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
     temp7 = (long)0;
     arg7 = &temp7; 
   }
-  {
-    if (!jarg8) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg8) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp8 = (long)0;
-    arg8 = &temp8; 
-  }
+  if (!SWIG_JavaArrayInLong(jenv, &jarr8, (long **)&arg8, jarg8)) return 0; 
   result = (bool)(arg1)->UnsafeVariableCodes(arg2,arg3,arg4,arg5,(char const **)arg6,arg7,arg8);
   jresult = (jboolean)result; 
   {
@@ -3004,19 +2881,16 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
     jint jvalue = (jint)temp7;
     jenv->SetIntArrayRegion(jarg7, 0, 1, &jvalue);
   }
-  {
-    jint jvalue = (jint)temp8;
-    jenv->SetIntArrayRegion(jarg8, 0, 1, &jvalue);
-  }
+  SWIG_JavaArrayArgoutLong(jenv, jarr8, (long *)arg8, jarg8); 
   
   
   
-  
+  delete [] arg8; 
   return jresult;
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1UnsafeVariablePrepare(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jintArray jarg3) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1UnsafeVariablePrepare(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jintArray jarg3) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -3052,14 +2926,14 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1UnsafeVariable(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jintArray jarg3, jintArray jarg4) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1UnsafeVariable(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jintArray jarg3, jintArray jarg4) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
   long *arg3 = (long *) 0 ;
   long *arg4 = (long *) 0 ;
   long temp3 ;
-  long temp4 ;
+  jint *jarr4 ;
   bool result;
   
   (void)jenv;
@@ -3079,35 +2953,21 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
     temp3 = (long)0;
     arg3 = &temp3; 
   }
-  {
-    if (!jarg4) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg4) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp4 = (long)0;
-    arg4 = &temp4; 
-  }
+  if (!SWIG_JavaArrayInLong(jenv, &jarr4, (long **)&arg4, jarg4)) return 0; 
   result = (bool)(arg1)->UnsafeVariable(arg2,arg3,arg4);
   jresult = (jboolean)result; 
   {
     jint jvalue = (jint)temp3;
     jenv->SetIntArrayRegion(jarg3, 0, 1, &jvalue);
   }
-  {
-    jint jvalue = (jint)temp4;
-    jenv->SetIntArrayRegion(jarg4, 0, 1, &jvalue);
-  }
+  SWIG_JavaArrayArgoutLong(jenv, jarr4, (long *)arg4, jarg4); 
   
-  
+  delete [] arg4; 
   return jresult;
 }
 
 
-SWIGEXPORT jint JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1GetMaxnUC(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
+SWIGEXPORT jint JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1GetMaxnUC(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_) {
   jint jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long result;
@@ -3122,7 +2982,7 @@ SWIGEXPORT jint JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1ComputeTables(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jintArray jarg2, jintArray jarg3) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1ComputeTables(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jintArray jarg2, jintArray jarg3) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long *arg2 = (long *) 0 ;
@@ -3175,7 +3035,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1BaseIndividualRisk(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jdoubleArray jarg4) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1BaseIndividualRisk(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jdouble jarg3, jdoubleArray jarg4) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -3213,7 +3073,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetTable(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jint jarg4, jintArray jarg5, jboolean jarg6, jint jarg7) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetTable(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jint jarg4, jintArray jarg5, jboolean jarg6, jint jarg7) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -3222,7 +3082,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   long *arg5 = (long *) 0 ;
   bool arg6 ;
   long arg7 ;
-  long temp5 ;
+  jint *jarr5 ;
   bool result;
   
   (void)jenv;
@@ -3232,32 +3092,18 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   arg2 = (long)jarg2; 
   arg3 = (long)jarg3; 
   arg4 = (long)jarg4; 
-  {
-    if (!jarg5) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg5) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp5 = (long)0;
-    arg5 = &temp5; 
-  }
+  if (!SWIG_JavaArrayInLong(jenv, &jarr5, (long **)&arg5, jarg5)) return 0; 
   arg6 = jarg6 ? true : false; 
   arg7 = (long)jarg7; 
   result = (bool)(arg1)->SetTable(arg2,arg3,arg4,arg5,arg6,arg7);
   jresult = (jboolean)result; 
-  {
-    jint jvalue = (jint)temp5;
-    jenv->SetIntArrayRegion(jarg5, 0, 1, &jvalue);
-  }
-  
+  SWIG_JavaArrayArgoutLong(jenv, jarr5, (long *)arg5, jarg5); 
+  delete [] arg5; 
   return jresult;
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetNumberTab(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetNumberTab(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -3274,7 +3120,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1ExploreFile(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2, jintArray jarg3, jintArray jarg4, jintArray jarg5) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1ExploreFile(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2, jintArray jarg3, jintArray jarg4, jintArray jarg5) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   std::string arg2 ;
@@ -3283,7 +3129,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
   long *arg5 = (long *) 0 ;
   long temp3 ;
   long temp4 ;
-  long temp5 ;
+  jint *jarr5 ;
   bool result;
   
   (void)jenv;
@@ -3322,18 +3168,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
     temp4 = (long)0;
     arg4 = &temp4; 
   }
-  {
-    if (!jarg5) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
-      return 0;
-    }
-    if (jenv->GetArrayLength(jarg5) == 0) {
-      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
-      return 0;
-    }
-    temp5 = (long)0;
-    arg5 = &temp5; 
-  }
+  if (!SWIG_JavaArrayInLong(jenv, &jarr5, (long **)&arg5, jarg5)) return 0; 
   result = (bool)(arg1)->ExploreFile(arg2,arg3,arg4,arg5);
   jresult = (jboolean)result; 
   {
@@ -3344,18 +3179,15 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
     jint jvalue = (jint)temp4;
     jenv->SetIntArrayRegion(jarg4, 0, 1, &jvalue);
   }
-  {
-    jint jvalue = (jint)temp5;
-    jenv->SetIntArrayRegion(jarg5, 0, 1, &jvalue);
-  }
+  SWIG_JavaArrayArgoutLong(jenv, jarr5, (long *)arg5, jarg5); 
   
   
-  
+  delete [] arg5; 
   return jresult;
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetVariable(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jint jarg4, jint jarg5, jstring jarg6, jstring jarg7, jboolean jarg8, jboolean jarg9, jboolean jarg10, jboolean jarg11, jboolean jarg12, jint jarg13) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetVariable(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jint jarg3, jint jarg4, jint jarg5, jstring jarg6, jstring jarg7, jboolean jarg8, jboolean jarg9, jboolean jarg10, jboolean jarg11, jboolean jarg12, jint jarg13) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -3408,7 +3240,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuArgCtrl_1SetNumberVar(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1SetNumberVar(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2) {
   jboolean jresult = 0 ;
   CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
   long arg2 ;
@@ -3425,7 +3257,7 @@ SWIGEXPORT jboolean JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_CMuAr
 }
 
 
-SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_swig_1module_1init(JNIEnv *jenv, jclass jcls) {
+SWIGEXPORT void JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_swig_1module_1init(JNIEnv *jenv, jclass jcls) {
   int i;
   
   static struct {
@@ -3433,11 +3265,11 @@ SWIGEXPORT void JNICALL Java_tauargus_extern_dataengine_MuargusCtrlJNI_swig_1mod
     const char *signature;
   } methods[1] = {
     {
-      "SwigDirector_IProgressListener_UpdateProgress", "(Ltauargus/extern/dataengine/IProgressListener;I)V" 
+      "SwigDirector_IProgressListener_UpdateProgress", "(Lmuargus/extern/dataengine/IProgressListener;I)V" 
     }
   };
-  Swig::jclass_MuargusCtrlJNI = (jclass) jenv->NewGlobalRef(jcls);
-  if (!Swig::jclass_MuargusCtrlJNI) return;
+  Swig::jclass_MuArgusCtrlJNI = (jclass) jenv->NewGlobalRef(jcls);
+  if (!Swig::jclass_MuArgusCtrlJNI) return;
   for (i = 0; i < (int) (sizeof(methods)/sizeof(methods[0])); ++i) {
     Swig::director_methids[i] = jenv->GetStaticMethodID(jcls, methods[i].method, methods[i].signature);
     if (!Swig::director_methids[i]) return;

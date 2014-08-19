@@ -8,8 +8,8 @@
  * interface file instead.
  * ----------------------------------------------------------------------------- */
 
-#ifndef SWIG_MuargusCtrl_WRAP_H_
-#define SWIG_MuargusCtrl_WRAP_H_
+#ifndef SWIG_MuArgusCtrl_WRAP_H_
+#define SWIG_MuArgusCtrl_WRAP_H_
 
 class SwigDirector_IProgressListener : public IProgressListener, public Swig::Director {
 

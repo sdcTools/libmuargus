@@ -15,6 +15,11 @@
 %apply double *OUTPUT { double * };
 %apply char **STRING_OUT { char ** };
 
+// Arrays used as input
+%apply long[] { long *VarList, long *HHFrequency, long *RecFrequency, long *Frequency, long *VarIndex, long *VarIndexes, long *UCArray};
+%apply char **STRING_ARRAY { char* [] }
+%apply double[] { double *ClassLeftValue };
+
 // Include this block in the generated C++ wrapper code (TauArgus_wrap.cpp)
 %{
 #include "IProgressListener.h"
