@@ -20,7 +20,7 @@
 %apply char **STRING_ARRAY { char* [] }
 %apply double[] { double *ClassLeftValue };
 
-// Include this block in the generated C++ wrapper code (TauArgus_wrap.cpp)
+// Include this block in the generated C++ wrapper code (MuArgus_wrap.cpp)
 %{
 #include "IProgressListener.h"
 #include "MuArgCtrl.h"
