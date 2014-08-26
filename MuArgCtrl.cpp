@@ -391,7 +391,7 @@ bool CMuArgCtrl::ReadVariableFreeFormat(char *Str, long VarIndex, std::string *V
     std::vector<std::string> VarCodes;
     std::string stempstr, stemp, tempvarcode;
     CVariable *var;
-    VarCodes.reserve(m_nvar);
+    VarCodes.resize(m_nvar);
     stempstr = Str;
     int inrem;
     long lseppos;
