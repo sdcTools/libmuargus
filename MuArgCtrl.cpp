@@ -2440,8 +2440,9 @@ bool CMuArgCtrl::DoTruncate(long VarIndex, long nPos)
 bool CMuArgCtrl::ApplyRecode()
 {
     ComputeRecodeTables();
+    printf("before ComputeSubTableList\n");
     ComputeSubTableList();
-
+    printf("after ComputeSubTableList\n");
     return true;
 }
 

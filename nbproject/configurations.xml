@@ -7,8 +7,8 @@
       <itemPath>ChSafeVarInfo.h</itemPath>
       <itemPath>Constants.h</itemPath>
       <itemPath>Household.h</itemPath>
-      <itemPath>NewMuArgCP.h</itemPath>
-      <itemPath>NewMuArgCtrl.h</itemPath>
+      <itemPath>MuArgCtrl.h</itemPath>
+      <itemPath>MuArgCtrl_wrap.h</itemPath>
       <itemPath>Recode.h</itemPath>
       <itemPath>Table.h</itemPath>
       <itemPath>UCList.h</itemPath>
@@ -19,13 +19,15 @@
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
                    projectFiles="true">
+      <itemPath>MuArgCtrl.swg</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>ChSafeVarInfo.cpp</itemPath>
       <itemPath>Household.cpp</itemPath>
-      <itemPath>NewMuArgCtrl.cpp</itemPath>
+      <itemPath>MuArgCtrl.cpp</itemPath>
+      <itemPath>MuArgCtrl_wrap.cpp</itemPath>
       <itemPath>Table.cpp</itemPath>
       <itemPath>Variable.cpp</itemPath>
     </logicalFolder>
@@ -50,6 +52,15 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <ccTool>
+          <incDir>
+            <pElem>C:/Program Files/Java/jdk1.8.0/include</pElem>
+            <pElem>C:/Program Files/Java/jdk1.8.0/include/win32</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <commandLine>-Wl,--kill-at</commandLine>
+        </linkerTool>
       </compileType>
       <item path="ChSafeVarInfo.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -61,11 +72,19 @@
       </item>
       <item path="Household.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="NewMuArgCP.h" ex="false" tool="3" flavor2="0">
+      <item path="MuArgCtrl.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="NewMuArgCtrl.cpp" ex="false" tool="1" flavor2="0">
+      <item path="MuArgCtrl.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="NewMuArgCtrl.h" ex="false" tool="3" flavor2="0">
+      <item path="MuArgCtrl.swg" ex="false" tool="3" flavor2="0">
+        <customTool>
+          <customToolCommandline>D:\Users\pwof\Documents\swig\swigwin-3.0.0\swig.exe -c++ -java -package muargus.extern.dataengine -outdir ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM} -o MuArgCtrl_wrap.cpp MuArgCtrl.swg</customToolCommandline>
+          <customToolOutputs>MuArgCtrl_wrap.cpp MuArgCtrl_wrap.h</customToolOutputs>
+        </customTool>
+      </item>
+      <item path="MuArgCtrl_wrap.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MuArgCtrl_wrap.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Recode.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -114,11 +133,15 @@
       </item>
       <item path="Household.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="NewMuArgCP.h" ex="false" tool="3" flavor2="0">
+      <item path="MuArgCtrl.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="NewMuArgCtrl.cpp" ex="false" tool="1" flavor2="0">
+      <item path="MuArgCtrl.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="NewMuArgCtrl.h" ex="false" tool="3" flavor2="0">
+      <item path="MuArgCtrl.swg" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="MuArgCtrl_wrap.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="MuArgCtrl_wrap.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="Recode.h" ex="false" tool="3" flavor2="0">
       </item>

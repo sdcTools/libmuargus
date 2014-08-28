@@ -37,7 +37,8 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/ChSafeVarInfo.o \
 	${OBJECTDIR}/Household.o \
-	${OBJECTDIR}/NewMuArgCtrl.o \
+	${OBJECTDIR}/MuArgCtrl.o \
+	${OBJECTDIR}/MuArgCtrl_wrap.o \
 	${OBJECTDIR}/Table.o \
 	${OBJECTDIR}/Variable.o
 
@@ -76,10 +77,15 @@ ${OBJECTDIR}/Household.o: Household.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Household.o Household.cpp
 
-${OBJECTDIR}/NewMuArgCtrl.o: NewMuArgCtrl.cpp 
+${OBJECTDIR}/MuArgCtrl.o: MuArgCtrl.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -O2  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/NewMuArgCtrl.o NewMuArgCtrl.cpp
+	$(COMPILE.cc) -O2  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MuArgCtrl.o MuArgCtrl.cpp
+
+${OBJECTDIR}/MuArgCtrl_wrap.o: MuArgCtrl_wrap.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MuArgCtrl_wrap.o MuArgCtrl_wrap.cpp
 
 ${OBJECTDIR}/Table.o: Table.cpp 
 	${MKDIR} -p ${OBJECTDIR}
