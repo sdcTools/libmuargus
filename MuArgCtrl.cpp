@@ -1,4 +1,6 @@
 // MuArgCtrl.cpp : Implementation of CMuArgCtrl
+
+
 #include "MuArgCtrl.h"
 #include <stdio.h>
 #include <string.h>
@@ -2911,11 +2913,11 @@ bool CMuArgCtrl::SetPramVar(long VarIndex, long BandWidth, bool Undo)
     n = m_var[v].GetnCodes(false);
 
     //m_var[v].PramValue.SetSize(n, 50);  // initialize
-    m_var[v].PramValue.reserve(n);  // initialize
+    m_var[v].PramValue.resize(n, PRAM_NOT_NA);  // initialize
 
-    for (c = 0; c < n; c++) {
-        m_var[v].PramValue[c] = PRAM_NOT_NA;  // initialize percentages with na
-    }
+    //for (c = 0; c < n; c++) {
+    //    m_var[v].PramValue[c] = PRAM_NOT_NA;  // initialize percentages with na
+    //}
 
     if (BandWidth != -1 && BandWidth < 1) {  // -1, 1, 2, 3, ...
 	return false;
