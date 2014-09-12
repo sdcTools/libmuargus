@@ -78,18 +78,18 @@ bool CMuArgCtrl::SetNumberVar(long nvar)
 
 /**
  * Specifies the properties of a variable
- * @param Index         long 1,2,... index of variable
- * @param bPos          long 1,2,... starting position in micro data file
- * @param nPos          long 1,2,... number of positions in micro data file, up to 100
- * @param nDec          long 0,1,... number of decimal places (especially important when writing safe file
- * @param Missing1      std::string code for first missing 
- * @param Missing2      std::string code for second missing
- * @param IsHHIdent     bool is identification variable for household
- * @param IsHHVar       bool is a household variable
- * @param IsCategorical bool is a categorical variable
- * @param IsNumeric     bool is a numeric variable
- * @param IsWeight      bool is a weight
- * @param RelatedVar    long index of related variable
+ * @param Index         1,2,... index of variable
+ * @param bPos          1,2,... starting position in micro data file
+ * @param nPos          1,2,... number of positions in micro data file, up to 100
+ * @param nDec          0,1,... number of decimal places (especially important when writing safe file
+ * @param Missing1      Code for first missing 
+ * @param Missing2      Code for second missing
+ * @param IsHHIdent     Is identification variable for household
+ * @param IsHHVar       Is a household variable
+ * @param IsCategorical Is a categorical variable
+ * @param IsNumeric     Is a numeric variable
+ * @param IsWeight      Is a weight
+ * @param RelatedVar    Index of related variable
  * @return              false if one or more parameters is wrong
  */
 bool CMuArgCtrl::SetVariable(long Index, long bPos, long nPos, long nDec, std::string Missing1, std::string Missing2,
@@ -170,15 +170,15 @@ bool CMuArgCtrl::SetVariable(long Index, long bPos, long nPos, long nDec, std::s
  * Examines of each categorical variable which codes occur. In fixed format input files,
  * all records are of equal length. The only exception are empty records, which are ignored 
  * without warning
- * @param FileName      std::string Name of file to be investigated
- * @param ErrorCode     long
+ * @param FileName      Name of file to be investigated
+ * @param ErrorCode     
  *                      FILENOTFOUND    file can not be opened
  *                      EMPTYFILE       file is empty
  *                      WRONGLENGTH     not all record lengths are equal
  *                      RECORDTOOSHORT  a variable does not fit within specified record length
  *                      NOVARIABLES     there are no variables specified 
- * @param LineNumber    long Line number where error occurred
- * @param VarIndex      long index of variable where error occurred
+ * @param LineNumber    Line number where error occurred
+ * @param VarIndex      Index of variable where error occurred
  * @return              false in case of error
  */
 bool CMuArgCtrl::ExploreFile(std::string FileName, long *ErrorCode, long *LineNumber, long *VarIndex)
@@ -262,7 +262,7 @@ bool CMuArgCtrl::ExploreFile(std::string FileName, long *ErrorCode, long *LineNu
 //		}
 //		else {
 		if (recnr % FIREPROGRESS == 0) {
-                    FireUpdateProgress((short)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
+                    FireUpdateProgress((int)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
 		}
 		if (m_bHasHH) {
                     if (!NumberOfHH(str, tempNumberofHH) )	{
@@ -435,8 +435,6 @@ bool CMuArgCtrl::ReadVariableFreeFormat(char *Str, long VarIndex, std::string *V
     }
 }
 
-
-
 bool CMuArgCtrl::ConvertNumeric(char *code, double &d)
 { 
     char *stop;
@@ -482,8 +480,8 @@ void CMuArgCtrl::AddSpacesBefore(char *str, int len)
 /**
  * Specifies the number of the table to compute.
  * Clears previously specified tables, if any.
- * @param nTab  long: number of tables
- * @return false if nTab is incorrect or if insufficient memory
+ * @param nTab  Number of tables
+ * @return      false if nTab is incorrect or if insufficient memory
  */
 bool CMuArgCtrl::SetNumberTab(long nTab)
 {
@@ -504,6 +502,11 @@ bool CMuArgCtrl::SetNumberTab(long nTab)
     return true;
 }
 
+/**
+ * Deletes all specified data and displays all the reserved memory. 
+ * Also called by SetNumberVar
+ * @return always true
+ */
 bool CMuArgCtrl::CleanAll()
 {
     CleanUp();
@@ -606,12 +609,12 @@ void CMuArgCtrl::CleanTables()
  * Specifies the attributes of a table.
  * The threshold is not important in case IsBIR == true.
  * In case of BIR, the threshold is specified after inspection of the histogram.
- * @param TabIndex          long Index of the table
- * @param Threshold         long Threshold
- * @param nDim              long Number of dimensions (<=10)
- * @param VarList           long The index for each dimension of the variable (1, 2, ..., nVar)
- * @param IsBIR             bool Is individual-risk-base table
- * @param BIRWeightVarIndex long Index of variabe containing BIR-associated weight
+ * @param TabIndex          Index of the table
+ * @param Threshold         Threshold
+ * @param nDim              Number of dimensions (<=10)
+ * @param VarList           The index for each dimension of the variable (1, 2, ..., nVar)
+ * @param IsBIR             Is individual-risk-base table
+ * @param BIRWeightVarIndex Index of variabe containing BIR-associated weight
  * @return false in case of specification errors
  */
 bool CMuArgCtrl::SetTable(long TabIndex, long Threshold, long nDim, long *VarList, bool IsBIR, long BIRWeightVarIndex)
@@ -683,6 +686,20 @@ bool CMuArgCtrl::SetTable(long TabIndex, long Threshold, long nDim, long *VarLis
     return true;
 }
 
+/**
+ * Calculates the individual risk of records based on the frequency of key variable combination (fk)
+ * and the sum of the weights of (Fk). Only important if BIR-table is specified (see SetTable).
+ * If fk = 0, the result is 0. If fk = Fk = 1, the result is 1.
+ * This function is called by MakeSafeFile. The reason for this function as an export function to include
+ * is the fact that it is nice to have a complicated calculation process at your disposal.
+ * See "Strategy for the Implementation of individual risk methodology to write-ARGUS: independent 
+ * (and hierarchical) units": Maurizio Bianchi and Alessandra Capo Lucarelli, ISTAT, MPS / D, 
+ * Via C. Bilbao 16, 00184, Roma, Italy, Deliverable No: D1-1.2 May 30, 2001 (third draft)
+ * @param fk    0,1,2,... frequency of key variable combination
+ * @param Fk    Total weights of the records with this key variable combination
+ * @param risk  The risk of this combination, 0 <= risk <= 1
+ * @return false if parameters are wrong (fk < 0, Fk < 0)
+ */
 bool CMuArgCtrl::BaseIndividualRisk(long fk, double Fk, double *risk)
 {
     double p; long r; double q; double x1; double x2; long i;
@@ -797,7 +814,7 @@ bool CMuArgCtrl::BaseIndividualRisk(long fk, double Fk, double *risk)
  * This also applies to the tables with the BIR property.
  * For each (sub)table the number of table cells with value in [0, threshold] is calculated.
  * All tables are stored in memory.
- * @param ErrorCode     long
+ * @param ErrorCode     
  *                      NOVARIABLES no variables specified
  *                      NOTABLES no tables specified
  *                      NOTENOUGHMEMORY all tables together have too much memory, at the moment
@@ -806,7 +823,7 @@ bool CMuArgCtrl::BaseIndividualRisk(long fk, double Fk, double *risk)
  *                      NOTABLEMEMORY for a single table there is not enough memory
  *                      NODATAFILE there is no file specified to examine
  *                      FILENOTFOUND file can not be opened
- * @param TableIndex    long Index of table where error occurred, -1 = no error
+ * @param TableIndex    Index of table where error occurred, -1 = no error
  * @return false in case of error
  */
 bool CMuArgCtrl::ComputeTables(long *ErrorCode, long *TableIndex)
@@ -892,7 +909,7 @@ bool CMuArgCtrl::ComputeTables(long *ErrorCode, long *TableIndex)
     while (!feof(fd) ) {
         int res = ReadMicroRecord(fd, str);
 	if (++recnr % FIREPROGRESS == 0) {
-            FireUpdateProgress((short)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
+            FireUpdateProgress((int)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
         }
         switch (res) {
             case INFILE_ERROR:
@@ -927,7 +944,7 @@ bool CMuArgCtrl::ComputeTables(long *ErrorCode, long *TableIndex)
 	while (!feof(fd) ) {
             res = ReadMicroRecord(fd, str);
             if (++recnr % FIREPROGRESS == 0) {
-                FireUpdateProgress((short)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
+                FireUpdateProgress((int)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
             }
             switch (res) {
                 case INFILE_ERROR:
@@ -975,8 +992,6 @@ bool CMuArgCtrl::ComputeTables(long *ErrorCode, long *TableIndex)
     return false;
 }
 
-
-
 bool CMuArgCtrl::ComputeTableIndex(char *str, CVariable *var, long Index)
 { 
     char code[MAXCODEWIDTH];
@@ -1000,7 +1015,6 @@ bool CMuArgCtrl::ComputeTableIndex(char *str, CVariable *var, long Index)
 
     return true;
 }
-
 
 void CMuArgCtrl::FillTables(char *str)
 { 
@@ -1163,7 +1177,7 @@ int CMuArgCtrl::ComputeSubTableList()
                 if (dim + 1 != m_UCList[k].nDim) continue;
                 if (dim + 1 == m_tab[m_UCList[k].TabNr].nDim) {  // basis table is a permanent table
                     if (ComputeSubTable(m_tab[m_UCList[k].TabNr], t) > 0)  {
-                        FireUpdateProgress( (short) (++nTables * 100.0 / m_nUC));
+                        FireUpdateProgress( (int) (++nTables * 100.0 / m_nUC));
                         break;
                     }
                 }
@@ -1490,9 +1504,9 @@ long CMuArgCtrl::GetMaxnUC()
 
 /**
  * Calculates for each relevant dimension (1,2,...) the number of unsafe combinations (UC) for a variable
- * @param VarIndex  long Index of the variable
- * @param Count     long Number of elements in UCArray
- * @param UCArray   long* Array of UCs of dimensions 1, 2, ..., Count
+ * @param VarIndex  Index of the variable
+ * @param Count     Number of elements in UCArray
+ * @param UCArray   Array of UCs of dimensions 1, 2, ..., Count
  * @return false if one or more parameters is wrong
  */
 bool CMuArgCtrl::UnsafeVariable(long VarIndex, long *Count, long *UCArray)
@@ -1554,8 +1568,8 @@ bool CMuArgCtrl::UnsafeVariable(long VarIndex, long *Count, long *UCArray)
  *      for each relevant dimension the number of UCs (at index 1, 2, ...)
  * Any action not completed any other variable is reversed so UnsafeVariableClose is
  * not necessarily required
- * @param VarIndex  long Index of variable
- * @param nCode     long Number of codes of the variable, including Missing
+ * @param VarIndex  Index of variable
+ * @param nCode     Number of codes of the variable, including Missing
  * @return false if one or more parameters is wrong
  */
 bool CMuArgCtrl::UnsafeVariablePrepare(long VarIndex, long *nCode)
@@ -1639,13 +1653,13 @@ bool CMuArgCtrl::UnsafeVariablePrepare(long VarIndex, long *nCode)
 /**
  * Indicates a variable frequency code index, code and number of UCs per dimension
  * UnsafeVariablePrepare should be invoked first with the same index variable
- * @param VarIndex  long Index of variable
- * @param CodeIndex long Index of code
+ * @param VarIndex  Index of variable
+ * @param CodeIndex Index of code
  * @param IsMissing 1 if Missing code, 0 otherwise
- * @param Freq      long frequency of the code
- * @param Code      char* Alphanumeric code
- * @param Count     long Number of elements in UCArray
- * @param UCArray   long* Array of UCs of dimensions 1, 2, ..., Count
+ * @param Freq      frequency of the code
+ * @param Code      Alphanumeric code
+ * @param Count     Number of elements in UCArray
+ * @param UCArray   Array of UCs of dimensions 1, 2, ..., Count
  * @return false if one or more parameters is wrong
  */
 bool CMuArgCtrl::UnsafeVariableCodes(long VarIndex, long CodeIndex, long *IsMissing, long *Freq, const char **Code, long *Count, long *UCArray)
@@ -1699,7 +1713,7 @@ bool CMuArgCtrl::UnsafeVariableCodes(long VarIndex, long CodeIndex, long *IsMiss
 
 /**
  * Frees memory reserved in UnsafeVariablePrepare
- * @param VarIndex  long Index of variable
+ * @param VarIndex  Index of variable
  * @return false if parameter is wrong
  */
 bool CMuArgCtrl::UnsafeVariableClose(long VarIndex)
@@ -1736,14 +1750,14 @@ bool CMuArgCtrl::UnsafeVariableClose(long VarIndex)
  * "1a" > "19"
  * "1 " < "11"
  * 
- * @param VarIndex      long Index of variable
- * @param RecodeString  char* Specification of string of the recoding
- * @param eMissing1     char* Value of Missing1
- * @param eMissing2     char* Value of Missing2
- * @param ErrorType     long Wrong type
- * @param ErrorLine     long Line where error occurred
- * @param ErrorPos      long Position where error occurred in line
- * @param WarningString char* Warning of overlapping sources, non-mentioned codes, etc.
+ * @param VarIndex      Index of variable
+ * @param RecodeString  Specification of string of the recoding
+ * @param eMissing1     Value of Missing1
+ * @param eMissing2     Value of Missing2
+ * @param ErrorType     Wrong type
+ * @param ErrorLine     Line where error occurred
+ * @param ErrorPos      Position where error occurred in line
+ * @param WarningString Warning of overlapping sources, non-mentioned codes, etc.
  * @return false if one or more parameters is wrong
  */
 bool CMuArgCtrl::DoRecode(long VarIndex, const char *RecodeString, const char *eMissing1, const char *eMissing2, long *ErrorType, long *ErrorLine, long *ErrorPos, const char **WarningString)
@@ -1985,7 +1999,7 @@ bool CMuArgCtrl::DoRecode(long VarIndex, const char *RecodeString, const char *e
 ///  2 : 500 -
 ///  3 : 11,13, 512, 530-570, 930-970
 ///  phase: CHECK       check only syntax
-///         DESTCODE    compute ans sort dest code
+///         DESTCODE    compute and sort dest code
 ///         SRCCODE     compute link between src and dest code
 
 bool CMuArgCtrl::ParseRecodeString(long VarIndex, const char *RecodeString, long *ErrorType, long *ErrorLine, long *ErrorPos, int Phase)
@@ -2322,7 +2336,7 @@ int CMuArgCtrl::ReadWord(const char *str, char* CodeFrom, char *CodeTo, char End
  * UnsafeVariablePrepare
  * UnsafeVariableCodes
  * UnsafeVriableClose
- * @param VarIndex  long Index of the variable
+ * @param VarIndex  Index of the variable
  * @return false if parameter in wrong
  */
 bool CMuArgCtrl::UndoRecode(long VarIndex)
@@ -2363,8 +2377,8 @@ void CMuArgCtrl::SetTableHasRecode()
 
 /**
  * Reduces the number of codes of a variable by cutting off one or more positions at the right
- * @param VarIndex  long Index of variable
- * @param nPos      long Number of positions to be truncated
+ * @param VarIndex  Index of variable
+ * @param nPos      Number of positions to be truncated
  * @return false if one or more parameters is wrong (e.g. no categorical variable or
  * nPos >= length(variable)
  */
@@ -2440,9 +2454,7 @@ bool CMuArgCtrl::DoTruncate(long VarIndex, long nPos)
 bool CMuArgCtrl::ApplyRecode()
 {
     ComputeRecodeTables();
-    printf("before ComputeSubTableList\n");
     ComputeSubTableList();
-    printf("after ComputeSubTableList\n");
     return true;
 }
 
@@ -2610,7 +2622,7 @@ bool CMuArgCtrl::WriteVariablesInFile(std::string FileNameMicro, std::string Fil
             case  INFILE_OKE:
 		recnr++;
 		if (recnr % FIREPROGRESS == 0) {
-                    FireUpdateProgress((short)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
+                    FireUpdateProgress((int)(ftell(fd) * 100.0 / m_fSize));  // for progressbar in container
 		}
 		if (recnr > 1) {
                     fprintf(fdout,"\n");
@@ -2745,6 +2757,13 @@ bool CMuArgCtrl::SetNumberOfChangeFiles(long nFiles)
     return true;
 }
 
+/**
+ * Sets the value above which a combination is unsafe
+ * @param TabIndex  1, 2, ..., n_tab index of table
+ * @param Threshold Value above which a variable combination is unsafe
+ * @param nUnsafe   Number of unsafe combinations with this Threshold
+ * @return false if TableIndex is incorrect
+ */
 bool CMuArgCtrl::SetBirThreshold(long TabIndex, double Threshold, long *nUnsafe)
 {
     double Ksi;
@@ -2779,10 +2798,10 @@ bool CMuArgCtrl::SetBirThreshold(long TabIndex, double Threshold, long *nUnsafe)
 /**
  * Sets for a given numerical variable the code to be used to replace all values above 
  * a certain value. E.g., all values above 600,000 receive the text ">=600,000"
- * @param VarIndex  long Index of the variable
- * @param TopLevel  double values >= TopLevel are to be replaced
- * @param TopString std::string Code used for replacement
- * @param TopUndo   bool False when setting the topcode, true when undoing it
+ * @param VarIndex  Index of the variable
+ * @param TopLevel  values >= TopLevel are to be replaced
+ * @param TopString Code used for replacement
+ * @param TopUndo   False when setting the topcode, true when undoing it
  * @return false if VarIndex is wrong
  */
 bool CMuArgCtrl::SetCodingTop(long VarIndex, double TopLevel, std::string TopString, bool TopUndo)
@@ -2803,10 +2822,10 @@ bool CMuArgCtrl::SetCodingTop(long VarIndex, double TopLevel, std::string TopStr
 /**
  * Sets for a given numerical variable the code to be used to replace all values  
  * below a certain value. E.g., all values below 100,000 receive the text "<=100,000"
- * @param VarIndex      long Index of the variable
- * @param BottomLevel   double values <= BottomLevel are to be replaced
- * @param BottomString  std::string Code used for replacement
- * @param BottomUndo    bool False when setting the bottomcode, true when undoing it
+ * @param VarIndex      Index of the variable
+ * @param BottomLevel   values <= BottomLevel are to be replaced
+ * @param BottomString  Code used for replacement
+ * @param BottomUndo    False when setting the bottomcode, true when undoing it
  * @return false if VarIndex is wrong
  */
 bool CMuArgCtrl::SetCodingBottom(long VarIndex, double BottomLevel, std::string BottomString, bool BottomUndo)
@@ -2827,9 +2846,9 @@ bool CMuArgCtrl::SetCodingBottom(long VarIndex, double BottomLevel, std::string 
 /**
  * Gives for a numerical variable the minimum and maximum value that occurs in the
  * input file
- * @param VarIndex  long Index of the variable
- * @param Min       double Minimum value
- * @param Max       double Maximum value
+ * @param VarIndex  Index of the variable
+ * @param Min       Minimum value
+ * @param Max       Maximum value
  * @return false if parameter VarIndex is wrong
  */
 bool CMuArgCtrl::GetMinMaxValue(long VarIndex, double *Min, double *Max)
@@ -2848,7 +2867,7 @@ bool CMuArgCtrl::GetMinMaxValue(long VarIndex, double *Min, double *Max)
 
 /**
  * Completes the specification of SetPramValue
- * @param VarIndex  long Index of the variable
+ * @param VarIndex  Index of the variable
  * @return false if VarIndex is wrong and/or not all codes are set
  */
 bool CMuArgCtrl::ClosePramVar(long VarIndex)
@@ -2874,9 +2893,9 @@ bool CMuArgCtrl::ClosePramVar(long VarIndex)
  * Specifies on which variable the following SetPramValue calls apply.
  * After these calls, the function ClosePramVar is to be called.
  * This function checks if all codes of the pramvariable have received a value.
- * @param VarIndex  long Index of the variable
- * @param BandWidth long Bandwidth (-1 of no bandwith, 1, 2, ... otherwise)
- * @param Undo      bool False to apply, true to undo
+ * @param VarIndex  Index of the variable
+ * @param BandWidth Bandwidth (-1 of no bandwith, 1, 2, ... otherwise)
+ * @param Undo      False to apply, true to undo
  * @return 
  */
 bool CMuArgCtrl::SetPramVar(long VarIndex, long BandWidth, bool Undo)
@@ -2937,8 +2956,8 @@ bool CMuArgCtrl::SetPramVar(long VarIndex, long BandWidth, bool Undo)
  * equal probability.
  * A missing will never be changed.
  * Pram-percentage ranges from 0 to 100 (both inclusive)
- * @param CodeIndex long Index of Code
- * @param Value     long Pram-percentage of not-changing
+ * @param CodeIndex Index of Code
+ * @param Value     Pram-percentage of not-changing
  * @return false if CodeIndex is wrong, Value < 0, Value > 100
  */
 bool CMuArgCtrl::SetPramValue(long CodeIndex, long Value)
@@ -2963,11 +2982,11 @@ bool CMuArgCtrl::SetPramValue(long CodeIndex, long Value)
 
 /**
  * Gives for a certain number of dimensions the properties of a table.
- * @param nDim      long Number of dimensions
- * @param Index     long Sequence number
- * @param BaseTable bool Is a base table (not a subtable)
- * @param nUC       long Number of UCs
- * @param VarList   long* nDim variable indices of the (sub) table
+ * @param nDim      Number of dimensions
+ * @param Index     Sequence number
+ * @param BaseTable Is a base table (not a subtable)
+ * @param nUC       Number of UCs
+ * @param VarList   nDim variable indices of the (sub) table
  * @return true if table with requested index is found. 
  *          If for Index==1 false is returned, there are no tables with that number of dimensions
  */
@@ -3007,10 +3026,10 @@ bool CMuArgCtrl::GetTableUC(long nDim, long Index, bool *BaseTable, long *nUC, l
 
 /**
  * Gives for a categorical variable the code-string and PRAM-percentage
- * @param VarIndex  long Index of the variable
- * @param CodeIndex long Index of the code
- * @param Code      char* Alphanumeric value of the code
- * @param PramPerc  long Percentage to be used in PRAM, -1 if not applicable
+ * @param VarIndex  Index of the variable
+ * @param CodeIndex Index of the code
+ * @param Code      Alphanumeric value of the code
+ * @param PramPerc  Percentage to be used in PRAM, -1 if not applicable
  * @return false if parameter VarIndex and/or CodeIndex is wrong
  */
 bool CMuArgCtrl::GetVarCode(long VarIndex, long CodeIndex, const char **Code, long *PramPerc)
@@ -3041,6 +3060,20 @@ bool CMuArgCtrl::GetVarCode(long VarIndex, long CodeIndex, const char **Code, lo
     return true;
 }
 
+/**
+ * Provides for a variable the position in the safe file, the number of times the variable is suppressed and the entropy
+ * @param VarIndex      1, 2, ..., n_var index of variable
+ * @param StartPos      Start position in safe file
+ * @param nPos          Number of positions
+ * @param nSuppress     Number of times suppressed
+ * @param Entropy       Entropy of variable, -1 if no entropy
+ * @param BandWidth     Bandwidth entropy of variable, -1 if no bandwidth entropy
+ * @param Missing1      Alphanumeric value Missing1, blank if not applicable
+ * @param Missing2      Alphanumeric value Missing2, blank if not applicable
+ * @param NofCodes      Number of codes in safe file (could differ from original, due to Recoding)
+ * @param NofMissing    Number of Missing codes in safe file
+ * @return false if error
+ */
 bool CMuArgCtrl::GetVarProperties(long VarIndex, long *StartPos, long *nPos, long *nSuppress, double *Entropy, long *BandWidth, const char **Missing1, const char **Missing2, long *NofCodes, long *NofMissing)
 {
     int i, v = VarIndex - 1;
@@ -3133,10 +3166,10 @@ bool CMuArgCtrl::SetChangeFile(long FileIndex, std::string FileName, long nVar, 
 /**
  * Sets for a numerical variable the rounding base. Rounding base can contain 
  * decimals, e.g. "2.5". In that case give as rounding base 2.5 and nDec=1.
- * @param VarIndex  long Index of the variable
- * @param RoundBase double Rounding base
- * @param nDec      long Number of decimals in rounding base
- * @param Undo      bool False when setting the rounding base, true when undoing it
+ * @param VarIndex  Index of the variable
+ * @param RoundBase Rounding base
+ * @param nDec      Number of decimals in rounding base
+ * @param Undo      False when setting the rounding base, true when undoing it
  * @return false if VarIndex is wrong, RounBase <= 0, nDec < 0
  */
 bool CMuArgCtrl::SetRound(long VarIndex, double RoundBase, long nDec, bool Undo)
@@ -3160,8 +3193,8 @@ bool CMuArgCtrl::SetRound(long VarIndex, double RoundBase, long nDec, bool Undo)
  * one candidate is eligible to be suppressed. When calling MakeFileSafe with the 
  * option "with prior", the variable with the lowest priority is suppressed. 
  * In case of equal priorities, the first variable is taken (with the smallest VarIndex)
- * @param VarIndex  long Index of the variable
- * @param Priority  long value of the priority
+ * @param VarIndex  Index of the variable
+ * @param Priority  Value of the priority
  * @return false in case VarIndex is wrong
  */
 bool CMuArgCtrl::SetSuppressPrior(long VarIndex, long Priority)
@@ -3179,8 +3212,8 @@ bool CMuArgCtrl::SetSuppressPrior(long VarIndex, long Priority)
  * Sets the percentage to decrease or increase the value of a numeric variable. 
  * Variable will be changed by percentage, randomly selected from the interval 
  * (100 - WeightNoise, 100 + WeightNoise)
- * @param VarIndex      long Index of the variable
- * @param WeightNoise   double Percentage by which the value is reduced/increased
+ * @param VarIndex      Index of the variable
+ * @param WeightNoise   Percentage by which the value is reduced/increased
  * @param Undo          False when applying, true when undoing
  * @return false if VarIndex if wrong, WeightNoise <= 0, WeighthNoise > 100
  */
@@ -3251,6 +3284,16 @@ bool CMuArgCtrl::ComputeBIRRateThreshold(long TabIndex, double MaxRisk, double *
     return true;
 }
 
+/**
+ * Histogram gives information about the BaseIndividualRisk base. 
+ * This is the natural logarithm of the result of that function.
+ * @param TabIndex          1, 2, ..., n_tab Index of table
+ * @param nClasses          Number of histogram classes
+ * @param ClassLeftValue    Array of nClasses+1 doubles: lower limits of the classes + upper limit of last class
+ * @param Ksi               Re-identification rate
+ * @param Frequency         Array of nClasses longs: BIR number per class
+ * @return false if TabIndex is wrong or some other silly error
+ */
 bool CMuArgCtrl::GetBIRHistogramData(long TabIndex, long nClasses, double *ClassLeftValue, double *Ksi, long *Frequency)
 {
     int i = TabIndex - 1, k, DimNr[MAXDIM];
@@ -3490,6 +3533,30 @@ void CMuArgCtrl::AddMissingCells(CTable& t, int *dimnr, int *nMissing, long& fre
     }
 }
 
+/**
+ * Creates a safe file:
+ *      If requested, calculates the entropy of categorical variables 
+ *      Makes a record description of the output file
+ *      If there are PRAM variables, the tables of the PRAM variables are ignored for local suppression
+ *      Takes into account that if a household variable changes, it changes in
+ *      every household record in the same way
+ *      Calculates the best combination of variables that must be set to Missing, taking
+ *      account of entropy, or weights, when creating a safe record
+ * If both WithPrior and WithEntropy are false: nothing will be suppressed
+ * @param FileName          Name of the safe file
+ * @param WithPrior         Use priorities
+ * @param WithEntropy       Use entropy
+ * @param HHIdentOption     Option to use HHIdent (household identifier)
+ *                          0: There is no household
+ *                          1: Keep Household variables consistent and do not change HHIdent
+ *                          2: Keep Household variables consistent and change HHIdent into a serial number
+ *                          3: Keep Household variables consistent and remove HHIdent
+ *                          Maintaining consistency means that if in at least one record in a household a Household variable is
+ *                          changed into Missing, that variable is set to Missing in all other records of that household.
+ * @param RandomizeOutput   Writes records in random order to the safe file. Only for fixed format data.
+ * @param PrintBHR
+ * @return false if something went wrong
+ */
 bool CMuArgCtrl::MakeFileSafe(std::string FileName, bool WithPrior, bool WithEntropy, long HHIdentOption, bool RandomizeOutput, bool PrintBHR)
 {
     std::string sFileName;
@@ -3623,7 +3690,7 @@ bool CMuArgCtrl::MakeFileSafe(std::string FileName, bool WithPrior, bool WithEnt
             }
             recnr++;
             if (recnr % FIREPROGRESS == 0) {
-                FireUpdateProgress((short)(recnr * 100.0 / m_nRecFile) );  // for progressbar in container
+                FireUpdateProgress((int)(recnr * 100.0 / m_nRecFile) );  // for progressbar in container
             }
 
             if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)&&(recnr == 1)) {
@@ -3670,7 +3737,7 @@ bool CMuArgCtrl::MakeFileSafe(std::string FileName, bool WithPrior, bool WithEnt
             }
 
             if (recnr % FIREPROGRESS == 0) {
-                FireUpdateProgress((short)(recnr * 100.0 / m_nRecFile) );  // for progressbar in container
+                FireUpdateProgress((int)(recnr * 100.0 / m_nRecFile) );  // for progressbar in container
             }
             strncpy(CurrHH, (char *) (&str[bPos]), nPos);
             if (ReadCode == INFILE_EOF || strncmp(CurrHH, PrevHH, nPos) != 0) {  // new HH
@@ -5063,7 +5130,7 @@ bool CMuArgCtrl::CalculateBaseHouseholdRisk(long *ErrorCode)
 	for (j=0; j<m_HH[i].m_lNumberofMembers; j++) {
             res = ReadMicroRecord(fd_in, str);
             if (++recnr % FIREPROGRESS == 0) {
-		FireUpdateProgress((short)(ftell(fd_in) *100.0/m_fSize));
+		FireUpdateProgress((int)(ftell(fd_in) *100.0/m_fSize));
             }
             switch(res) {
 		case INFILE_ERROR:
@@ -5415,7 +5482,7 @@ bool CMuArgCtrl::CalculateBIRFreq(long TableIndex, long nUnsafe, double *BIRResu
     while (!feof(fdread)){
 	res = ReadMicroRecord(fdread, str);
 	if (++recnr % FIREPROGRESS == 0) {
-            FireUpdateProgress((short)(ftell(fdread) * 100.0 / m_fSize));  // for progressbar in container
+            FireUpdateProgress((int)(ftell(fdread) * 100.0 / m_fSize));  // for progressbar in container
         }
         switch (res) {
             case INFILE_ERROR:
