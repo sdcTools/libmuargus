@@ -267,6 +267,7 @@ public:
 	bool ExploreFile(/*[in]*/ std::string FileName,/*[in]*/  long *ErrorCode,/*[in]*/  long *LineNumber, /*[in]*/ long *VarIndex);
 	bool SetVariable(/*[in]*/ long Index,/*[in]*/ long bPos,/*[in]*/ long nPos,/*[in]*/ long nDec, /*[in]*/ std::string Missing1,/*[in]*/ std::string Missing2,/*[in]*/  bool IsHHIdent,/*[in]*/  bool IsHHVar,/*[in]*/  bool IsCategorical,/*[in]*/  bool IsNumeric,/*[in]*/  bool IsWeight,/*[in]*/ long RelatedVar);
 	bool SetNumberVar(/*[in]*/ long nvar);
+        bool GetErrorString(/*[in]*/ long ErrorCode, /*[in,out]*/ const char** ErrorString);
 };
 
 #endif //__NEWMUARGCTRL_H_

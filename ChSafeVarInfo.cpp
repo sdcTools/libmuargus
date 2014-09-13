@@ -33,7 +33,7 @@ bool CChSafeVarInfo::FillVariableCode()
 	int iseppos;
 	// First Clear previous array
 	sVariableCode.clear();
-	sVariableCode.reserve(m_lNVar);
+	sVariableCode.resize(m_lNVar);
 	fd = fopen(m_sFileName.c_str(),"r");
 	fseek(fd,m_lCurrFilePos,SEEK_SET);
 

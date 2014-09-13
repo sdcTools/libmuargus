@@ -2022,7 +2022,8 @@ bool CMuArgCtrl::ParseRecodeStringLine(long VarIndex, const char *str, long *Err
     char DestCode[MAXCODEWIDTH + 1];
     char SrcCode1[MAXCODEWIDTH + 1];
     char SrcCode2[MAXCODEWIDTH + 1];
-
+    char Dummy[MAXCODEWIDTH+1];
+    
     for (i = 0; i < len; i++) {
         if (str[i] > 32 || str[i] < 0) break;
         if (str[i] < 32) break;
@@ -2036,7 +2037,7 @@ bool CMuArgCtrl::ParseRecodeStringLine(long VarIndex, const char *str, long *Err
     // parse something like: 1 : 1 - 32 , 35 - 78, 99
 
     // first the destination code
-    res = ReadWord(str, DestCode, NULL, ':', fromto, position);
+    res = ReadWord(str, DestCode, Dummy, ':', fromto, position);
 
     if (res < 0 || str[res] != ':') {
         *ErrorType = E_HARD;
@@ -3005,6 +3006,65 @@ bool CMuArgCtrl::GetTableUC(long nDim, long Index, bool *BaseTable, long *nUC, l
     }
 //    *pVal = VARIANT_FALSE;
     return false;
+}
+
+bool CMuArgCtrl::GetErrorString(long errorCode, const char ** errorString) {
+    std::string str("Unknown error");
+    switch (errorCode) {
+        case FILENOTFOUND:
+            str = "File not found";
+            break;
+        case CANTOPENFILE:
+            str = "Cannot open file";
+            break;
+        case EMPTYFILE:
+            str = "File is empty";
+            break;
+        case WRONGLENGTH:
+            str = "Record has wrong length";
+            break;
+        case RECORDTOOSHORT:
+            str = "Record is too short";
+            break;
+        case WRONGRECORD:
+            str = "Error in record";
+            break;
+        case NOVARIABLES:
+            str = "No variables have been defined";
+            break;
+        case NOTABLES:
+            str = "No tables have been defined";
+            break;
+        case NOTENOUGHMEMORY:
+            str = "There is not enough memory";
+            break;
+        case NOTABLEMEMORY:
+            str = "Not enough memory for table";
+            break;
+        case NODATAFILE:
+            str = "No data file specified";
+            break;
+        case E_HARD:
+            str = "Syntax error";
+            break;
+        case E_LENGTHWRONG:
+            str = "Wrong code length";
+            break;
+        case E_VARINDEXWRONG:
+            str = "Wrong variable index";
+            break;
+        case E_RANGEWRONG:
+            str = "Invalid range";
+            break;
+        case E_NOVARTABDATA:
+            str = "Not all metadata specified";
+            break;
+        case E_EMPTYSPEC:
+            str = "Empty specification";
+            break;
+    }
+    *errorString = str.c_str();
+    return true;
 }
 
 /**
@@ -5248,7 +5308,7 @@ bool CMuArgCtrl::GetBHRHistogramData(long TableIndex, long nClasses, double *Cla
 	ClassLeftValue[k] = t->BHRMinValue + k * t->BHRClassWidth;
     }
 
-    for (k=0; k<= nClasses; k++){
+    for (k=0; k< nClasses; k++){
 	HHFrequency[k] = 0;
 	RecFrequency[k] = 0;
     }

@@ -3257,6 +3257,44 @@ SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArg
 }
 
 
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1GetErrorString(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jint jarg2, jobjectArray jarg3) {
+  jboolean jresult = 0 ;
+  CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
+  long arg2 ;
+  char **arg3 = (char **) 0 ;
+  char *temp3 ;
+  bool result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(CMuArgCtrl **)&jarg1; 
+  arg2 = (long)jarg2; 
+  {
+    if (!jarg3) {
+      SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "array null");
+      return 0;
+    }
+    if (jenv->GetArrayLength(jarg3) == 0) {
+      SWIG_JavaThrowException(jenv, SWIG_JavaIndexOutOfBoundsException, "Array must contain at least 1 element");
+      return 0;
+    }
+    arg3 = &temp3; 
+    *arg3 = 0;
+  }
+  result = (bool)(arg1)->GetErrorString(arg2,(char const **)arg3);
+  jresult = (jboolean)result; 
+  {
+    jstring jnewstring = NULL;
+    if (arg3) {
+      jnewstring = jenv->NewStringUTF(*arg3);
+    }
+    jenv->SetObjectArrayElement(jarg3, 0, jnewstring); 
+  }
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_swig_1module_1init(JNIEnv *jenv, jclass jcls) {
   int i;
   
