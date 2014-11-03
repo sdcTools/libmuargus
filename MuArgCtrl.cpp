@@ -441,6 +441,8 @@ bool CMuArgCtrl::ConvertNumeric(char *code, double &d)
 { 
     char *stop;
 
+    //Setting the locale to C is not necessary for Windows, but it seems to be for Unix
+    std::string s = std::string(setlocale(LC_NUMERIC, "C"));
     d = strtod(code, &stop);
 
     if (*stop != 0) {
@@ -567,6 +569,7 @@ void CMuArgCtrl::CleanUp()
     m_HHVars.clear();     // remove all HHVars
     if (m_nChangeFiles > 0) {
         delete[] m_ChangeFiles;
+        m_nChangeFiles = 0;
     }
 
     m_lNumBIRs = 0;
@@ -1367,7 +1370,7 @@ bool CMuArgCtrl::ComputeUnsafeCells(CTable & t, int CVar)
 void CMuArgCtrl::ComputeNumberUnsafeCells(CTable & t, int niv, int cindex, bool IsMissingCode, int CVar, int code)
 {
     assert(CVar < m_nvar);
-    assert( (CVar < 0 && code < 0) || (CVar >= 0 && code >= -1 && code < m_var[CVar].nCode) );
+    //assert( (CVar < 0 && code < 0) || (CVar >= 0 && code >= -1 && code < m_var[CVar].nCode) );
 
     if (niv == t.nDim) {
         assert(cindex >= 0 && cindex < t.nCell);

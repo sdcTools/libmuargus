@@ -2,11 +2,12 @@
 #include <string>
 #include <vector>
 #include <stdio.h>
+#include <string.h>
 
 void CChSafeVarInfo::SetVarIndex(long *lVarIndex) {
     if (m_lNVar >0){
 	m_lVarIndex = new long[m_lNVar];
-	m_lVarIndex = lVarIndex;
+	memcpy(m_lVarIndex, lVarIndex, m_lNVar*sizeof(long));
     }
 }
 
