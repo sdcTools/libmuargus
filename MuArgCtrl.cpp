@@ -2009,7 +2009,7 @@ bool CMuArgCtrl::DoRecode(long VarIndex, const char *RecodeString, const char *e
 
 bool CMuArgCtrl::ParseRecodeString(long VarIndex, const char *RecodeString, long *ErrorType, long *ErrorLine, long *ErrorPos, int Phase)
 { 
-    char *p;
+    const char *p;
     int PosInString = 0, LineNumber = 1;
     int oke;
 
