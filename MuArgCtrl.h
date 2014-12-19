@@ -115,7 +115,7 @@ private:
 	bool m_StringsInQuotes;
 
 	int m_nRecFile;
-	char m_fname[_MAX_PATH];
+	char m_fname[1024];
 
 	int m_PramVarIndex;
 
