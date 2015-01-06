@@ -1834,7 +1834,7 @@ bool CMuArgCtrl::DoRecode(long VarIndex, const char *RecodeString, const char *e
     if (Missing1.empty() && Missing2.empty()) {
 	Missing1 = m_var[v].Missing1;
 	if (m_var[v].nMissing == 2) {
-            Missing2, m_var[v].Missing2;
+            Missing2 = m_var[v].Missing2;
 	}
 	else {
             Missing2 = Missing1;
