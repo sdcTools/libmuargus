@@ -231,8 +231,9 @@ private:
 	bool FillBIRArray(CTable &tab, double *BIRarray, char *record);
 	void QuickSortBIRFreqArray(double * BIR, long *Freq, int first, int last);
 	double FindBIRforNumIterations(double BIR0, long NumIter, long nUnsafe, double *BIRArray, long *FreqArray, CTable &t);
-
-
+        
+        bool WriteAnonInfo(FILE *fd_out, char *record, long recnr, long nVar, long* VarIndexes, std::string separator, char *origrecord);
+        bool IsInVarIndexes(long index, long nVar, long* VarIndexes);
 
 	int GGD(int a, int b);
 
@@ -285,6 +286,7 @@ public:
 	bool SetVariable(/*[in]*/ long Index,/*[in]*/ long bPos,/*[in]*/ long nPos,/*[in]*/ long nDec, /*[in]*/ std::string Missing1,/*[in]*/ std::string Missing2,/*[in]*/  bool IsHHIdent,/*[in]*/  bool IsHHVar,/*[in]*/  bool IsCategorical,/*[in]*/  bool IsNumeric,/*[in]*/  bool IsWeight,/*[in]*/ long RelatedVar);
 	bool SetNumberVar(/*[in]*/ long nvar);
         bool GetErrorString(/*[in]*/ long ErrorCode, /*[in,out]*/ const char** ErrorString);
+        bool MakeAnonFile(/*[in]*/ std::string FileName, /*[in]*/ long nVar, /*[in,out]*/ long *VarIndexes, /*[in]*/ std::string seperator, /*[in,out]*/ long *ErrorCode);
 };
 
 #endif //__NEWMUARGCTRL_H_

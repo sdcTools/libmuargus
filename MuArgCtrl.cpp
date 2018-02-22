@@ -29,6 +29,11 @@
 #include <algorithm>
 #include <sstream>
 
+void WriteLog(std::string String){
+    FILE *f_log = fopen("C:\\Users\\pwof\\AppData\\Local\\Temp\\AnonLog.txt","a");
+    fprintf(f_log,"%s\n",String.c_str());
+    fclose(f_log);
+}
 
 std::string trimright(const std::string &t)
 {
@@ -3895,7 +3900,6 @@ bool CMuArgCtrl::MakeRecordDescription(long HHIdentOption)
     std::vector<std::string> rec;
     std::string s;
     char str[100];
-    FILE *fd;
 
     // compute used positions in source record
     for (v = 0; v < m_nvar; v++) {
@@ -5826,3 +5830,186 @@ bool CMuArgCtrl::CalculateBHRFreq(long TableIndex, bool UseNumOfHH, long nUnsafe
     delete[] tempBHRarray;
     return true;
 }
+
+bool CMuArgCtrl::MakeAnonFile(std::string FileName, long nVar, long* VarIndexes, std::string separator, long* ErrorCode)
+{
+    std::string sFileName;
+    sFileName = FileName;
+    FILE *fd_in, *fd_out;
+    char str[MAXRECORDLENGTH];
+    char orgstr[MAXRECORDLENGTH];
+    int i, j, recnr;
+
+    WriteLog("Start MakeAnonFile");
+    
+    if (m_nvar == 0 || m_ntab == 0 || m_fname[0] == 0) {
+	return false;
+    }
+
+    // open input
+    fd_in = fopen(m_fname, "r");
+    if (fd_in == 0) {
+	return false;
+    }
+
+    // open output
+    fd_out = fopen(sFileName.c_str(), "w");
+    if (fd_out == 0) {
+	return false;
+    }
+    
+    // initialize nSuppress in variables
+    for (i = 0; i < m_nvar; i++) {
+        m_var[i].nSuppress = 0;
+    }
+    
+    MakeFreeRecordDescription(HHIDENT_NO);
+
+    WriteLog("MakeFreeRecordDescription done");
+    
+    recnr = 0;
+    int ReadCode;
+
+    while (1) {
+        if (ReadCode = ReadMicroRecord(fd_in, str), ReadCode != INFILE_OKE) {
+            assert(ReadCode != INFILE_ERROR);
+            break;  // error (should not be possible) or eof
+        }
+        recnr++;
+        if (recnr % FIREPROGRESS == 0) {
+            FireUpdateProgress((int)(recnr * 100.0 / m_nRecFile) );  // for progressbar in container
+        }
+
+        if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)&&(recnr == 1)) {
+            if (!m_FirstLine.empty()) {
+                fprintf(fd_out, "%s\n", m_FirstLine.c_str());
+            }
+            continue;
+        }
+        strcpy((char *)orgstr,(char *)str);
+        // compute (recode)indices out of alfanumerical code for every categorical variable
+        if (!ComputeVarIndices(str)) return false;
+        // now replace the string with some stuff
+        WriteAnonInfo(fd_out, str, recnr, nVar, VarIndexes, separator, orgstr);
+    }
+
+    fclose(fd_in);
+    fclose(fd_out);
+    FireUpdateProgress(100);  // for progressbar in container
+
+    return true;
+
+error:
+    fclose(fd_in);
+    fclose(fd_out);
+
+    return false;
+}
+
+bool CMuArgCtrl::WriteAnonInfo(FILE *fd_out, char *record, long recnr, long nVar, long* VarIndexes, std::string separator, char *origrecord)
+{
+    char str[MAXRECORDLENGTH];
+    int i, iVar;
+    CVarList *v = &(m_varlist[0]);// to suppress warning
+    CChSafeVarInfo *objVarInfo;
+    std::string stempstr;
+    CVariable *tempvar;
+    char connumstr[MAXCODEWIDTH];
+    std::string OutString,TempString,tempcode;
+    std::string InString;
+    InString = record;
+    OutString = "";
+
+    long lfilenum,lArrIndex;
+
+    for (i=0; i<m_nChangeFiles; i++) {
+        objVarInfo = &(m_ChangeFiles[i]);
+	if (!objVarInfo->FillVariableCode()) {
+            return false;
+	}
+    }
+    // Here you have to see if the variable is in one of the objects and then replace it.
+    for (i = 0; i < m_nvarpos; i++) {
+        v = &(m_varlist[i]);
+        if (IsInVarIndexes(v->VarIndex + 1,nVar,VarIndexes)){
+            if (IsInOutputFile(v->VarIndex,&lfilenum,&lArrIndex)) {
+                objVarInfo = &(m_ChangeFiles[lfilenum]);
+                stempstr = objVarInfo->sVariableCode.at(lArrIndex);
+ 
+                tempvar = &(m_var[v->VarIndex]);
+                if (stempstr.size() > v->d_npos) {
+                    stempstr = stempstr.substr(0,v->d_npos);
+                    if (m_StringsInQuotes) {
+                        stempstr = '"'+ stempstr + '"';
+                    }
+                    OutString = OutString + separator + stempstr;
+                }
+                else {
+                    strcpy(connumstr,stempstr.c_str());
+                    AddSpacesBefore(connumstr, v->d_npos);
+                    TempString = connumstr;
+                    if (m_StringsInQuotes) {
+                        TempString = '"' + TempString + '"';
+                    }
+                    OutString = OutString + separator +TempString;
+                }
+            }
+            else {
+                assert(v->d_npos >= 0);
+                if(v->d_npos == 0) continue;
+            
+                iVar = v->VarIndex;
+                // unused positions
+                if (iVar < 0) { return false; }
+
+                CVariable *var = &m_var[iVar];
+                
+                // a "normal" variable
+                if (!var->HasRecode) {
+                // no recode variable
+                    if (m_InFileIsFixedFormat){
+                        tempcode = InString.substr(var->bPos,var->nPos);
+                        if ((m_StringsInQuotes)&& (!var->IsNumeric)) {
+                            tempcode = '"' + tempcode + '"';
+                        }
+                        OutString = OutString + separator + tempcode;
+                    }
+                    else {
+                        if (ReadVariableFreeFormat(record,i,&(tempcode))) {
+                            if ((m_StringsInQuotes)&& (!var->IsNumeric)) {
+                                tempcode = '"' + tempcode + '"';
+                            }
+                            OutString = OutString + separator + tempcode;
+                        }
+                    }
+                } else {
+                    // recode variable
+                    int t = var->TableIndex;
+                    assert(t >= 0 && t < var->Recode.nCode);
+                    TempString = var->Recode.sCode[t];
+                    if ((m_StringsInQuotes)&& (!var->IsNumeric)) {
+                        TempString = '"' + TempString + '"';
+                    }
+                    OutString = OutString + separator + TempString;
+                }
+            }
+            OutString = trimright(OutString);
+        }
+    }
+    
+    fprintf(fd_out,"%s\n", OutString.substr(1,OutString.size() - 1).c_str());
+    
+    return true;
+}
+
+bool CMuArgCtrl::IsInVarIndexes(long index, long nVar, long* VarIndexes){
+    // VarIndexes contains 1-based indexes of k-anonymity variables
+    // index 
+    long i;
+    for (i=0;i<nVar;i++){
+        if (index == VarIndexes[i])
+            return true;
+    }
+    return false;
+}
+
