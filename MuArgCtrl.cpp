@@ -5840,8 +5840,6 @@ bool CMuArgCtrl::MakeAnonFile(std::string FileName, long nVar, long* VarIndexes,
     char orgstr[MAXRECORDLENGTH];
     int i, j, recnr;
 
-    WriteLog("Start MakeAnonFile");
-    
     if (m_nvar == 0 || m_ntab == 0 || m_fname[0] == 0) {
 	return false;
     }
@@ -5865,8 +5863,6 @@ bool CMuArgCtrl::MakeAnonFile(std::string FileName, long nVar, long* VarIndexes,
     
     MakeFreeRecordDescription(HHIDENT_NO);
 
-    WriteLog("MakeFreeRecordDescription done");
-    
     recnr = 0;
     int ReadCode;
 
@@ -5922,76 +5918,37 @@ bool CMuArgCtrl::WriteAnonInfo(FILE *fd_out, char *record, long recnr, long nVar
 
     long lfilenum,lArrIndex;
 
-    for (i=0; i<m_nChangeFiles; i++) {
-        objVarInfo = &(m_ChangeFiles[i]);
-	if (!objVarInfo->FillVariableCode()) {
-            return false;
-	}
-    }
     // Here you have to see if the variable is in one of the objects and then replace it.
     for (i = 0; i < m_nvarpos; i++) {
         v = &(m_varlist[i]);
         if (IsInVarIndexes(v->VarIndex + 1,nVar,VarIndexes)){
-            if (IsInOutputFile(v->VarIndex,&lfilenum,&lArrIndex)) {
-                objVarInfo = &(m_ChangeFiles[lfilenum]);
-                stempstr = objVarInfo->sVariableCode.at(lArrIndex);
- 
-                tempvar = &(m_var[v->VarIndex]);
-                if (stempstr.size() > v->d_npos) {
-                    stempstr = stempstr.substr(0,v->d_npos);
-                    if (m_StringsInQuotes) {
-                        stempstr = '"'+ stempstr + '"';
-                    }
-                    OutString = OutString + separator + stempstr;
+            assert(v->d_npos >= 0);
+            if(v->d_npos == 0) continue;
+            
+            iVar = v->VarIndex;
+            // unused positions
+            if (iVar < 0) { return false; }
+
+            CVariable *var = &m_var[iVar];
+                
+            // a "normal" variable
+            if (!var->HasRecode) {
+            // no recode variable
+                if (m_InFileIsFixedFormat){
+                    tempcode = InString.substr(var->bPos,var->nPos);
+                    OutString = OutString + separator + tempcode;
                 }
                 else {
-                    strcpy(connumstr,stempstr.c_str());
-                    AddSpacesBefore(connumstr, v->d_npos);
-                    TempString = connumstr;
-                    if (m_StringsInQuotes) {
-                        TempString = '"' + TempString + '"';
-                    }
-                    OutString = OutString + separator +TempString;
-                }
-            }
-            else {
-                assert(v->d_npos >= 0);
-                if(v->d_npos == 0) continue;
-            
-                iVar = v->VarIndex;
-                // unused positions
-                if (iVar < 0) { return false; }
-
-                CVariable *var = &m_var[iVar];
-                
-                // a "normal" variable
-                if (!var->HasRecode) {
-                // no recode variable
-                    if (m_InFileIsFixedFormat){
-                        tempcode = InString.substr(var->bPos,var->nPos);
-                        if ((m_StringsInQuotes)&& (!var->IsNumeric)) {
-                            tempcode = '"' + tempcode + '"';
-                        }
+                    if (ReadVariableFreeFormat(record,i,&(tempcode))) {
                         OutString = OutString + separator + tempcode;
                     }
-                    else {
-                        if (ReadVariableFreeFormat(record,i,&(tempcode))) {
-                            if ((m_StringsInQuotes)&& (!var->IsNumeric)) {
-                                tempcode = '"' + tempcode + '"';
-                            }
-                            OutString = OutString + separator + tempcode;
-                        }
-                    }
-                } else {
-                    // recode variable
-                    int t = var->TableIndex;
-                    assert(t >= 0 && t < var->Recode.nCode);
-                    TempString = var->Recode.sCode[t];
-                    if ((m_StringsInQuotes)&& (!var->IsNumeric)) {
-                        TempString = '"' + TempString + '"';
-                    }
-                    OutString = OutString + separator + TempString;
                 }
+            } else {
+                // recode variable
+                int t = var->TableIndex;
+                assert(t >= 0 && t < var->Recode.nCode);
+                TempString = var->Recode.sCode[t];
+                OutString = OutString + separator + TempString;
             }
             OutString = trimright(OutString);
         }
