@@ -287,6 +287,7 @@ public:
 	bool SetNumberVar(/*[in]*/ long nvar);
         bool GetErrorString(/*[in]*/ long ErrorCode, /*[in,out]*/ const char** ErrorString);
         bool MakeAnonFile(/*[in]*/ std::string FileName, /*[in]*/ long nVar, /*[in,out]*/ long *VarIndexes, /*[in]*/ std::string seperator, /*[in,out]*/ long *ErrorCode);
+        bool CombineToSafeFile(/*[in]*/ std::string FileName, /*[in]*/ long *nSupps, /*[in]*/ bool WithPrior,/*[in]*/ bool WithEntropy,/*[in]*/ long HHIdentOption,/*[in]*/ bool RandomizeOutput,/*[in]*/ bool PrintBHR);
 };
 
 #endif //__NEWMUARGCTRL_H_

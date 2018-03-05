@@ -3417,6 +3417,45 @@ SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArg
 }
 
 
+SWIGEXPORT jboolean JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_CMuArgCtrl_1CombineToSafeFile(JNIEnv *jenv, jclass jcls, jlong jarg1, jobject jarg1_, jstring jarg2, jintArray jarg3, jboolean jarg4, jboolean jarg5, jint jarg6, jboolean jarg7, jboolean jarg8) {
+  jboolean jresult = 0 ;
+  CMuArgCtrl *arg1 = (CMuArgCtrl *) 0 ;
+  std::string arg2 ;
+  long *arg3 = (long *) 0 ;
+  bool arg4 ;
+  bool arg5 ;
+  long arg6 ;
+  bool arg7 ;
+  bool arg8 ;
+  jint *jarr3 ;
+  bool result;
+  
+  (void)jenv;
+  (void)jcls;
+  (void)jarg1_;
+  arg1 = *(CMuArgCtrl **)&jarg1; 
+  if(!jarg2) {
+    SWIG_JavaThrowException(jenv, SWIG_JavaNullPointerException, "null string");
+    return 0;
+  } 
+  const char *arg2_pstr = (const char *)jenv->GetStringUTFChars(jarg2, 0); 
+  if (!arg2_pstr) return 0;
+  (&arg2)->assign(arg2_pstr);
+  jenv->ReleaseStringUTFChars(jarg2, arg2_pstr); 
+  if (!SWIG_JavaArrayInLong(jenv, &jarr3, (long **)&arg3, jarg3)) return 0; 
+  arg4 = jarg4 ? true : false; 
+  arg5 = jarg5 ? true : false; 
+  arg6 = (long)jarg6; 
+  arg7 = jarg7 ? true : false; 
+  arg8 = jarg8 ? true : false; 
+  result = (bool)(arg1)->CombineToSafeFile(arg2,arg3,arg4,arg5,arg6,arg7,arg8);
+  jresult = (jboolean)result; 
+  SWIG_JavaArrayArgoutLong(jenv, jarr3, (long *)arg3, jarg3); 
+  delete [] arg3; 
+  return jresult;
+}
+
+
 SWIGEXPORT void JNICALL Java_muargus_extern_dataengine_MuArgusCtrlJNI_swig_1module_1init(JNIEnv *jenv, jclass jcls) {
   int i;
   

@@ -16,7 +16,7 @@
 %apply char **STRING_OUT { char ** };
 
 // Arrays used as input
-%apply long[] { long *VarList, long *HHFrequency, long *RecFrequency, long *Frequency, long *VarIndex, long *VarIndexes, long *UCArray};
+%apply long[] { long *nSupps, long *VarList, long *HHFrequency, long *RecFrequency, long *Frequency, long *VarIndex, long *VarIndexes, long *UCArray};
 %apply char **STRING_ARRAY { char* [] }
 %apply double[] { double *ClassLeftValue };
 

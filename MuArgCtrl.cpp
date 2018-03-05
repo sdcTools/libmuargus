@@ -5861,7 +5861,7 @@ bool CMuArgCtrl::MakeAnonFile(std::string FileName, long nVar, long* VarIndexes,
         m_var[i].nSuppress = 0;
     }
     
-    MakeFreeRecordDescription(HHIDENT_NO);
+    MakeFreeRecordDescription(HHIDENT_NO); // (k+1)-anonymisation in sdcMicro does not deal with households
 
     recnr = 0;
     int ReadCode;
@@ -5970,3 +5970,182 @@ bool CMuArgCtrl::IsInVarIndexes(long index, long nVar, long* VarIndexes){
     return false;
 }
 
+/**
+ * Creates a safe file:
+ *      If requested, calculates the entropy of categorical variables 
+ *      Makes a record description of the output file
+ *      If there are PRAM variables, the tables of the PRAM variables are ignored for local suppression
+ *      Takes into account that if a household variable changes, it changes in
+ *      every household record in the same way
+ *      Calculates the best combination of variables that must be set to Missing, taking
+ *      account of entropy, or weights, when creating a safe record
+ * If both WithPrior and WithEntropy are false: nothing will be suppressed
+ * @param FileName          Name of the safe file
+ * @param WithPrior         Use priorities
+ * @param WithEntropy       Use entropy
+ * @param HHIdentOption     Option to use HHIdent (household identifier)
+ *                          0: There is no household
+ *                          1: Keep Household variables consistent and do not change HHIdent
+ *                          2: Keep Household variables consistent and change HHIdent into a serial number
+ *                          3: Keep Household variables consistent and remove HHIdent
+ *                          Maintaining consistency means that if in at least one record in a household a Household variable is
+ *                          changed into Missing, that variable is set to Missing in all other records of that household.
+ * @param RandomizeOutput   Writes records in random order to the safe file. Only for fixed format data.
+ * @param PrintBHR
+ * @return false if something went wrong
+ */
+bool CMuArgCtrl::CombineToSafeFile(std::string FileName, long *nSupps, bool WithPrior, bool WithEntropy, long HHIdentOption, bool RandomizeOutput, bool PrintBHR)
+{
+    std::string sFileName;
+    sFileName = FileName;
+    FILE *fd_in, *fd_out;
+    char str[MAXRECORDLENGTH];
+    char orgstr[MAXRECORDLENGTH];
+    int i, j, recnr, nRecHH = 1;
+    int* InvolvedVar;
+    bool bPrintBHR;
+    if (PrintBHR)	{
+    	if ((m_lNumBIRs <= 0)  && (m_lNumberOfHH <= 0)) {
+            return false;
+	}
+	bPrintBHR = true;
+    }
+    else {
+	bPrintBHR = false;
+    }
+
+    m_WriteRandom = RandomizeOutput;
+    m_HHIdentOption = HHIdentOption;
+
+    if (HHIdentOption != HHIDENT_NO) { // there are householdrecords
+        if (m_HHIdentVar < 0) {          // no HHIdent specified
+            return false;
+	}
+    }
+
+    m_HHSeqNr = 0;
+
+    InvolvedVar = new int[m_HHVars.size()];
+
+    if (m_nvar == 0 || m_ntab == 0 || m_fname[0] == 0) {
+	return false;
+    }
+
+    // seed random number generator
+    srand( (unsigned) time(NULL));
+
+    // zero m_nMissing in variables
+    for (i = 0; i < m_nvar; i++) {
+        m_var[i].nSuppress = nSupps[i];
+    }
+    
+
+    m_WithPriority = WithPrior;
+    m_WithEntropy  = WithEntropy;
+
+    // open input
+    fd_in = fopen(m_fname, "r");
+    if (fd_in == 0) {
+	return false;
+    }
+
+    // open output
+    char sWriteType[10];
+    if (m_WriteRandom) {
+        strcpy(sWriteType, "wb");
+	// compute m_WriteRecnr and m_WriteCoPrime
+	if (m_nRecFile < 10) {
+            m_WriteCoPrime = 2;
+	}
+	else {
+            srand(time(NULL));
+            m_WriteCoPrime = (rand() % (m_nRecFile / 2) );
+            if (m_WriteCoPrime < 2) m_WriteCoPrime = 2;
+	}
+	// 2 <= coprime < n_rec
+        while ( GGD(m_nRecFile, m_WriteCoPrime) != 1) m_WriteCoPrime++;
+	m_WriteRecNr = rand() % m_WriteCoPrime;
+	m_WriteRecNr = m_WriteRecNr % m_nRecFile; // to be quite sure
+    }
+    else {
+        strcpy(sWriteType, "w");
+    }
+
+    fd_out = fopen(sFileName.c_str(), sWriteType);
+    if (fd_out == 0) {
+	return false;
+    }
+
+    if (m_OutFileIsFixedFormat) {
+    	MakeRecordDescription( HHIdentOption); // If FileName empty: no *.rda written
+    }
+    else {
+        MakeFreeRecordDescription(HHIdentOption);
+    }
+
+    if (WithEntropy) {
+        for (i = 0; i < m_nvar; i++) {
+            if (m_var[i].IsCategorical) {
+                DoEntropy(i, m_var[i].Entropy);
+				/*
+#ifdef _DEBUGG
+        TRACE("Entropy var %c: %f\n", i + 'A', m_var[i].Entropy);
+#endif // _DEBUG */
+
+            }
+	}
+    }
+
+/*
+#ifdef SHOWUNSAFE
+  fd_test = fopen("unsafe.txt", "w");
+#endif  // SHOWUNSAFE
+*/
+	// zo nodig alle records van een huishouden bijeenhouden
+  // om de huishoudvariabelen identiek te behandelen
+
+    //m_nUnsafe = 0;
+    recnr = 0;
+    int ReadCode;
+
+    // no householdrecords: k-anonymity in sdcMicro does not deal with households
+	while (1) {
+            if (ReadCode = ReadMicroRecord(fd_in, str), ReadCode != INFILE_OKE) {
+                assert(ReadCode != INFILE_ERROR);
+                break;  // error (should not be possible) or eof
+            }
+            recnr++;
+            if (recnr % FIREPROGRESS == 0) {
+                FireUpdateProgress((int)(recnr * 100.0 / m_nRecFile) );  // for progressbar in container
+            }
+
+            if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)&&(recnr == 1)) {
+                if (!m_FirstLine.empty()) {
+                    fprintf(fd_out, "%s\n", m_FirstLine.c_str());
+                }
+                continue;
+            }
+            strcpy((char *)orgstr,(char *)str);
+            if (!ComputeVarIndices(str)) return false;
+            // now replace the string with some stuff
+            WriteRecord(fd_out, str, HHIdentOption, recnr, false, 0, bPrintBHR,orgstr);
+        }
+    
+#ifdef SHOWUNSAFE
+  fclose(fd_test);
+#endif // SHOWUNSAFE
+
+    fclose(fd_in);
+    fclose(fd_out);
+    delete [] InvolvedVar;
+    FireUpdateProgress(100);  // for progressbar in container
+
+    return true;
+
+error:
+    fclose(fd_in);
+    fclose(fd_out);
+    delete [] InvolvedVar;
+
+    return false;
+}
