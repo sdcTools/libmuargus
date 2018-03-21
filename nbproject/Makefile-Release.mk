@@ -67,32 +67,32 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/liblibmuargus.${CND_DLIB_EXT}: ${OBJE
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/liblibmuargus.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -shared
 
-${OBJECTDIR}/ChSafeVarInfo.o: ChSafeVarInfo.cpp 
+${OBJECTDIR}/ChSafeVarInfo.o: ChSafeVarInfo.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ChSafeVarInfo.o ChSafeVarInfo.cpp
 
-${OBJECTDIR}/Household.o: Household.cpp 
+${OBJECTDIR}/Household.o: Household.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Household.o Household.cpp
 
-${OBJECTDIR}/MuArgCtrl.o: MuArgCtrl.cpp 
+${OBJECTDIR}/MuArgCtrl.o: MuArgCtrl.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MuArgCtrl.o MuArgCtrl.cpp
 
-${OBJECTDIR}/MuArgCtrl_wrap.o: MuArgCtrl_wrap.cpp 
+${OBJECTDIR}/MuArgCtrl_wrap.o: MuArgCtrl_wrap.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MuArgCtrl_wrap.o MuArgCtrl_wrap.cpp
 
-${OBJECTDIR}/Table.o: Table.cpp 
+${OBJECTDIR}/Table.o: Table.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Table.o Table.cpp
 
-${OBJECTDIR}/Variable.o: Variable.cpp 
+${OBJECTDIR}/Variable.o: Variable.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Variable.o Variable.cpp
@@ -103,7 +103,6 @@ ${OBJECTDIR}/Variable.o: Variable.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/liblibmuargus.${CND_DLIB_EXT}
 
 # Subprojects
 .clean-subprojects:

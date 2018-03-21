@@ -51,7 +51,7 @@ public:
 	CTable table;           // content of subtable
 
 	bool unsafe;            // during MakeFileSave: combination of variables is unsafe?
-        bool HasPram;           // ture: at least one of the varialbles of the table is prammed
+        bool HasPram;           // true: at least one of the variables of the table is prammed
 };
 
 #endif
