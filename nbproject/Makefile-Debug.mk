@@ -67,40 +67,40 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/liblibmuargus.${CND_DLIB_EXT}: ${OBJE
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/liblibmuargus.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -Wl,--kill-at -shared
 
-${OBJECTDIR}/ChSafeVarInfo.o: ChSafeVarInfo.cpp 
+${OBJECTDIR}/ChSafeVarInfo.o: ChSafeVarInfo.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/C/Program\ Files/Java/jdk1.8.0_65/include -I/C/Program\ Files/Java/jdk1.8.0_65/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ChSafeVarInfo.o ChSafeVarInfo.cpp
+	$(COMPILE.cc) -g -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/ChSafeVarInfo.o ChSafeVarInfo.cpp
 
-${OBJECTDIR}/Household.o: Household.cpp 
+${OBJECTDIR}/Household.o: Household.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/C/Program\ Files/Java/jdk1.8.0_65/include -I/C/Program\ Files/Java/jdk1.8.0_65/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Household.o Household.cpp
+	$(COMPILE.cc) -g -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Household.o Household.cpp
 
-${OBJECTDIR}/MuArgCtrl.o: MuArgCtrl.cpp 
+${OBJECTDIR}/MuArgCtrl.o: MuArgCtrl.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/C/Program\ Files/Java/jdk1.8.0_65/include -I/C/Program\ Files/Java/jdk1.8.0_65/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MuArgCtrl.o MuArgCtrl.cpp
+	$(COMPILE.cc) -g -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MuArgCtrl.o MuArgCtrl.cpp
 
 .NO_PARALLEL:MuArgCtrl_wrap.cpp MuArgCtrl_wrap.h
-MuArgCtrl_wrap.cpp MuArgCtrl_wrap.h: MuArgCtrl.swg 
+MuArgCtrl_wrap.cpp MuArgCtrl_wrap.h: MuArgCtrl.swg
 	@echo Performing Custom Build Step
-	D:\Users\pwof\Documents\swig\swigwin-3.0.7\swig.exe -c++ -java -package muargus.extern.dataengine -outdir ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM} -o MuArgCtrl_wrap.cpp MuArgCtrl.swg
+	C:\swigwin-3.0.10\swig.exe -c++ -java -package muargus.extern.dataengine -outdir ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM} -o MuArgCtrl_wrap.cpp MuArgCtrl.swg
 
-${OBJECTDIR}/MuArgCtrl_wrap.o: MuArgCtrl_wrap.cpp 
+${OBJECTDIR}/MuArgCtrl_wrap.o: MuArgCtrl_wrap.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/C/Program\ Files/Java/jdk1.8.0_65/include -I/C/Program\ Files/Java/jdk1.8.0_65/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MuArgCtrl_wrap.o MuArgCtrl_wrap.cpp
+	$(COMPILE.cc) -g -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/MuArgCtrl_wrap.o MuArgCtrl_wrap.cpp
 
-${OBJECTDIR}/Table.o: Table.cpp 
+${OBJECTDIR}/Table.o: Table.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/C/Program\ Files/Java/jdk1.8.0_65/include -I/C/Program\ Files/Java/jdk1.8.0_65/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Table.o Table.cpp
+	$(COMPILE.cc) -g -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Table.o Table.cpp
 
-${OBJECTDIR}/Variable.o: Variable.cpp 
+${OBJECTDIR}/Variable.o: Variable.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -I/C/Program\ Files/Java/jdk1.8.0_65/include -I/C/Program\ Files/Java/jdk1.8.0_65/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Variable.o Variable.cpp
+	$(COMPILE.cc) -g -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include -I/C/Program\ Files\ \(x86\)/Java/jdk1.8.0_111/include/win32  -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Variable.o Variable.cpp
 
 # Subprojects
 .build-subprojects:
@@ -108,7 +108,6 @@ ${OBJECTDIR}/Variable.o: Variable.cpp
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/liblibmuargus.${CND_DLIB_EXT}
 	${RM} MuArgCtrl_wrap.cpp MuArgCtrl_wrap.h
 
 # Subprojects
