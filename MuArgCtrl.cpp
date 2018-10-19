@@ -2688,7 +2688,7 @@ bool CMuArgCtrl::WriteVariablesFromMicroRecord(char *str, FILE *fdout, long *Var
                 return false;
             }
             var = &(m_var[lVarIndex-1]);
-            if (var->IsCategorical || var->IsNumeric) {
+            if (var->IsCategorical || var->IsNumeric || var->IsHHIdent) { // HHidentifier needed in targeted record swapping
                 if (m_InFileIsFixedFormat)  {
                     bp = var->bPos;         // startposition
                     ap = var->nPos;         // number of positions
