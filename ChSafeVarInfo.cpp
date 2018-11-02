@@ -56,7 +56,8 @@ bool CChSafeVarInfo::FillVariableCode()
 	fseek(fd,m_lCurrFilePos,SEEK_SET);
 
 
-	fgets((char *)str, MAXRECORD,fd);
+	fgets((char *)str, MAXRECORD,fd); // fgets() returns a string including any LF, CR, CRLF, LFCR
+        str[strcspn(str,"\r\n")]=0; // Remove LF, CR, CRLF, LFCR, ... Important to do so for non-numeric variables!!!!
         stempstr = str;
         
 	iseppos = stempstr.find(m_sSeperator,0);

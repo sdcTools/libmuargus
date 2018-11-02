@@ -29,12 +29,6 @@
 #include <algorithm>
 #include <sstream>
 
-void WriteLog(std::string String){
-    FILE *f_log = fopen("C:\\Users\\pwof\\AppData\\Local\\Temp\\AnonLog.txt","a");
-    fprintf(f_log,"%s\n",String.c_str());
-    fclose(f_log);
-}
-
 std::string trimright(const std::string &t)
 {
     std::string str = t;
@@ -3803,7 +3797,7 @@ bool CMuArgCtrl::MakeFileSafe(std::string FileName, bool WithPrior, bool WithEnt
 	int FirstRecHH = true, nRecHH;
 
 	CurrHH[nPos] = 0;
-
+        
         while (1) {
             RecPos = ftell(fd_in);
             if (ReadCode = ReadMicroRecord(fd_in, str), ReadCode != INFILE_OKE) {
