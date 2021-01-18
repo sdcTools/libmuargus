@@ -443,7 +443,7 @@ bool CMuArgCtrl::ReadVariableFreeFormat(char *Str, long VarIndex, std::string *V
         inrem = inrem - tempvarcode.size(); // Number of removed quotes
 	assert ((inrem == 2) || (inrem == 0));  // should be either 2 or 0
 	var = &(m_var[VarIndex]);
-	AddSpacesBefore(tempvarcode,var->nPos);
+	//AddSpacesBefore(tempvarcode,var->nPos); // Why add leading spaces for free format???? Removed 12/01/2021 PWOF
 	//Now add leading spaces
 	*VarCode = tempvarcode;
 	return true;
@@ -2618,18 +2618,25 @@ bool CMuArgCtrl::WriteVariablesInFile(std::string FileNameMicro, std::string Fil
     }
 
     // record length oke?
-    for (i = 0; i < m_nvar; i++) {
-        if (m_var[i].bPos + m_var[i].nPos > m_fixedlength) {
-            *ErrorCode = RECORDTOOSHORT;
-            fclose(fd);fclose(fdout);
-            return false;
-	}
+    if (m_InFileIsFixedFormat) { // Only makes sense to check in case of fixed format 
+        for (i = 0; i < m_nvar; i++) {
+            if (m_var[i].bPos + m_var[i].nPos > m_fixedlength) {
+                *ErrorCode = RECORDTOOSHORT;
+                fclose(fd);fclose(fdout);
+                return false;
+            }
+        }
     }
 
+    int res;
     rewind(fd);
+    if ((!m_InFileIsFixedFormat)&&(m_IgnoreFirstLine)) { // If first line contains var names: skip this line
+        res = ReadMicroRecord(fd, str);
+    }
+
     int recnr = 0;
     while (!feof(fd) ) {
-        int res;
+        //int res;
 	res = ReadMicroRecord(fd, str);
 	switch (res) {
             case INFILE_ERROR:
@@ -4600,7 +4607,7 @@ bool CMuArgCtrl::WriteRecord(FILE *fd_out, char *record, long HHIdentOption, lon
 		else {
                     sprintf(connumstr, "%*.*f", v->d_npos, tempvar->nDec, dub);
 		}
-		AddSpacesBefore(connumstr, v->d_npos);
+		AddSpacesBefore(connumstr, v->d_npos); // Why also for free format?
 		if (m_OutFileIsFixedFormat) {
                     memcpy(&str[v->d_bpos], connumstr, v->d_npos);
 		}
@@ -4629,8 +4636,9 @@ bool CMuArgCtrl::WriteRecord(FILE *fd_out, char *record, long HHIdentOption, lon
                 }
                 else {
                     strcpy(connumstr,stempstr.c_str());
-                    AddSpacesBefore(connumstr, v->d_npos);
+                    //AddSpacesBefore(connumstr, v->d_npos); // Why also for free format?
                     if (m_OutFileIsFixedFormat) {
+                        AddSpacesBefore(connumstr, v->d_npos);
                         memcpy(&str[v->d_bpos], connumstr, v->d_npos);
                     }
                     else {
@@ -4770,7 +4778,7 @@ bool CMuArgCtrl::WriteRecord(FILE *fd_out, char *record, long HHIdentOption, lon
                             }
                         }
                         if (strcmp(code, var->Missing1.c_str()) == 0 || strcmp(code, var->Missing2.c_str()) == 0) {
-                            AddSpacesBefore(code, v->d_npos);
+                            AddSpacesBefore(code, v->d_npos); // Why also for free format?
                             if (m_OutFileIsFixedFormat)	{
                                 memcpy(&str[v->d_bpos], code, v->d_npos);
                             }
@@ -4806,7 +4814,7 @@ bool CMuArgCtrl::WriteRecord(FILE *fd_out, char *record, long HHIdentOption, lon
                             }
                             // put code in output record
                             assert(strlen(code) <= (unsigned) v->d_npos);
-                            AddSpacesBefore(code, v->d_npos);
+                            AddSpacesBefore(code, v->d_npos); // Why also for free format?
                             if (m_OutFileIsFixedFormat) {
                                 memcpy(&str[v->d_bpos], code, v->d_npos);
                             }
